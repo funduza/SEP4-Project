@@ -44,16 +44,24 @@ const Dashboard: React.FC = () => {
   const [selectedRange, setSelectedRange] = useState<TimeRange>('24h');
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [secondsAgo, setSecondsAgo] = useState<number>(0);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const previousData = useRef<SensorData | null>(null);
-  const refreshInterval = 30000; 
+  const refreshInterval = 10000; // Update every 10 seconds instead of 5
+  const [updateCounter, setUpdateCounter] = useState<number>(0); // Counter for forcing updates
+  
+  // Store previous chart data to allow appending
+  const chartDataRef = useRef<SensorData[]>([]);
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
   
   
   const formatTimeAgo = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    // If more than 60 seconds, just show "< 1 minute ago"
+    if (seconds >= 60) {
+      return "< 1 minute ago";
+    } else {
+      return `${seconds} seconds ago`;
+    }
   };
 
   
@@ -66,6 +74,10 @@ const Dashboard: React.FC = () => {
 
   
   useEffect(() => {
+    // İlk başta hemen güncelle
+    updateSecondsCounter();
+    
+    // Sonra her 1 saniyede bir güncelle
     const timer = setInterval(() => {
       updateSecondsCounter();
     }, 1000);
@@ -73,70 +85,119 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(timer);
   }, [updateSecondsCounter]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setError(null);
-      try {
-        const currentResponse = await fetch(`${API_URL}/api/sensors`);
-        
-        if (!currentResponse.ok) {
-          throw new Error(`HTTP ${currentResponse.status}`);
-        }
-        
-        const sensorData: SensorData = await currentResponse.json();
-        
-        
-        const isNewData = !previousData.current || 
-          previousData.current.id !== sensorData.id ||
-          previousData.current.temperature !== sensorData.temperature ||
-          previousData.current.humidity !== sensorData.humidity ||
-          previousData.current.prediction !== sensorData.prediction;
-        
-        
-        previousData.current = data;
-        
-        
-        setData(sensorData);
-        
-        
-        if (isNewData) {
-          setLastUpdated(new Date());
-          setSecondsAgo(0);
-        }
-        
-        if (sensorData._source) {
-          setDataSource(sensorData._source);
-        }
-
-        const historyResponse = await fetch(`${API_URL}/api/sensors/history?range=${selectedRange}`);
-        
-        if (!historyResponse.ok) {
-          throw new Error(`HTTP ${historyResponse.status}`);
-        }
-        
-        const historyData: HistoricalSensorData = await historyResponse.json();
-        setHistoricalData(historyData);
-        
-        setIsLoading(false);
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('An unknown error occurred');
-        }
-        setIsLoading(false);
-      }
-    };
-
+  // Add this new function to generate demo data
+  const handleGenerateDemoData = async () => {
+    if (isGenerating) return;
     
+    try {
+      setIsGenerating(true);
+      setError(null);
+      
+      console.log("📊 Generating demo data...");
+      const response = await fetch(`${API_URL}/api/sensors/generate-demo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log("📊 Demo data generation result:", result);
+      
+      // Refresh data after generation
+      fetchData();
+      
+      // Show a brief alert
+      alert(result.message || "Demo data generated successfully!");
+    } catch (err) {
+      console.error("Error generating demo data:", err);
+      setError(err instanceof Error ? err.message : "Failed to generate demo data");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Update the fetchData function to append new data rather than replace it
+  const fetchData = useCallback(async () => {
+    setError(null);
+    try {
+      // Fetch current sensor data
+      console.log("📊 Fetching current sensor data...");
+      const currentResponse = await fetch(`${API_URL}/api/sensors`);
+      
+      if (!currentResponse.ok) {
+        throw new Error(`HTTP ${currentResponse.status}`);
+      }
+      
+      const sensorData: SensorData = await currentResponse.json();
+      console.log('📊 Current sensor data:', sensorData);
+      
+      // Check if this is new data
+      const isNewData = !previousData.current || 
+        previousData.current.id !== sensorData.id ||
+        previousData.current.temperature !== sensorData.temperature ||
+        previousData.current.humidity !== sensorData.humidity ||
+        previousData.current.prediction !== sensorData.prediction;
+      
+      // Update previous data reference
+      previousData.current = sensorData;
+      
+      // Update state
+      setData(sensorData);
+      
+      // Update last updated time if new data
+      if (isNewData) {
+        console.log('📊 New data detected, updating lastUpdated');
+        setLastUpdated(new Date());
+        setSecondsAgo(0);
+        setUpdateCounter(prev => prev + 1);
+      }
+      
+      if (sensorData._source) {
+        setDataSource(sensorData._source);
+      }
+
+      // Fetch historical data
+      console.log(`📊 Fetching historical data for range: ${selectedRange}...`);
+      const historyResponse = await fetch(`${API_URL}/api/sensors/history?range=${selectedRange}`);
+      
+      if (!historyResponse.ok) {
+        throw new Error(`HTTP ${historyResponse.status}`);
+      }
+      
+      const historyData: HistoricalSensorData = await historyResponse.json();
+      console.log('📊 Historical data received:', historyData.data?.length || 0, 'records');
+      
+      // Update historical data state
+      setHistoricalData(historyData);
+      
+      setIsLoading(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
+      setIsLoading(false);
+    }
+  }, [API_URL, selectedRange]);
+
+  useEffect(() => {
+    // Initial fetch
     fetchData();
     
-    
-    const intervalId = setInterval(fetchData, refreshInterval);
-    
+    // Set up interval for refreshing data
+    const intervalId = setInterval(() => {
+      console.log(`📊 Refresh interval triggered (${refreshInterval}ms)`);
+      fetchData();
+    }, refreshInterval);
     
     return () => clearInterval(intervalId);
-  }, [API_URL, selectedRange, data]); 
+  }, [fetchData, refreshInterval]);
 
   
   const getValueStyle = (key: 'temperature' | 'humidity') => {
@@ -195,15 +256,55 @@ const Dashboard: React.FC = () => {
 
   
   const processedData = useMemo(() => {
-    if (!historicalData || !historicalData.data) return [];
+    if (!historicalData || !historicalData.data) {
+      console.log('📊 No historical data to process');
+      return [];
+    }
     
-    return historicalData.data
+    console.log('📊 Processing historical data:', historicalData.data.length, 'records', 'updateCounter:', updateCounter);
+    
+    // Şu anki zaman
+    const now = new Date();
+    
+    // Seçilen zaman aralığına göre saati hesapla
+    let hourRange = 24; // Varsayılan
+    if (selectedRange === '1h') hourRange = 1;
+    if (selectedRange === '6h') hourRange = 6;
+    if (selectedRange === '12h') hourRange = 12;
+    if (selectedRange === '24h') hourRange = 24;
+    if (selectedRange === '7d') hourRange = 24 * 7;
+    if (selectedRange === '30d') hourRange = 24 * 30;
+    
+    // Minimum gereken zaman (şimdi - x saat)
+    const minTime = new Date();
+    minTime.setHours(now.getHours() - hourRange);
+    
+    console.log(`📊 Filtering data for range: ${selectedRange} (${hourRange} hours)`);
+    console.log(`📊 Current time: ${now.toISOString()}, Min time: ${minTime.toISOString()}`);
+    
+    // Verileri filtrele
+    const filteredData = historicalData.data
       .filter(item => {
-        
         try {
           const date = new Date(item.timestamp);
-          return !isNaN(date.getTime());
+          
+          // Tarih geçerli mi?
+          const isValidDate = !isNaN(date.getTime());
+          
+          // Seçilen zaman aralığı içinde mi?
+          // Yılı kontrol etmemek için sadece saat, dakika, saniye karşılaştırması yapalım
+          const normalizedItemDate = new Date(date);
+          normalizedItemDate.setFullYear(now.getFullYear()); // Yılları eşitle
+          
+          const isInRange = normalizedItemDate >= minTime;
+          
+          if (isValidDate && isInRange) {
+            return true;
+          }
+          
+          return false;
         } catch (e) {
+          console.error('📊 Error parsing date:', item.timestamp, e);
           return false;
         }
       })
@@ -211,11 +312,20 @@ const Dashboard: React.FC = () => {
         ...item,
         temperature: ensureNumber(item.temperature),
         humidity: ensureNumber(item.humidity),
-        
         timestampMs: new Date(item.timestamp).getTime()
       }))
       .sort((a, b) => a.timestampMs - b.timestampMs);
-  }, [historicalData]);
+    
+    console.log(`📊 Filtered data: ${filteredData.length} records remain after filtering`);
+    
+    // İlk ve son kayıt göster
+    if (filteredData.length > 0) {
+      console.log('📊 First filtered record:', filteredData[0]);
+      console.log('📊 Last filtered record:', filteredData[filteredData.length - 1]);
+    }
+    
+    return filteredData;
+  }, [historicalData, selectedRange, updateCounter]); // updateCounter'ı bağımlılıklara ekle
 
   if (error) {
     return (
@@ -291,6 +401,22 @@ const Dashboard: React.FC = () => {
         alignItems: 'center'
       }}>
         Greenhouse Monitoring Dashboard
+        <button 
+          onClick={handleGenerateDemoData}
+          disabled={isGenerating}
+          style={{
+            backgroundColor: isGenerating ? '#cccccc' : '#3498db',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '8px 16px',
+            fontSize: '14px',
+            cursor: isGenerating ? 'not-allowed' : 'pointer',
+            transition: 'background-color 0.3s'
+          }}
+        >
+          {isGenerating ? 'Generating...' : 'Generate Demo Data'}
+        </button>
       </h1>
       
       <div style={{ marginBottom: 30 }}>
@@ -444,7 +570,7 @@ const Dashboard: React.FC = () => {
             padding: '2px 8px',
             borderRadius: '12px'
           }}>
-            {formatTimeAgo(secondsAgo)} ago
+            {formatTimeAgo(secondsAgo)}
           </span>
         </p>
       </div>
@@ -518,6 +644,7 @@ const Dashboard: React.FC = () => {
             paddingBottom: '8px'
           }}>Temperature Trend</h3>
           <LineChart 
+            key={`temp-chart-${selectedRange}-${processedData.length}`}
             data={processedData} 
             xAxisKey="timestamp" 
             yAxisKeys={[{ key: 'temperature', color: '#ff6b6b', name: 'Temperature (°C)' }]}
@@ -545,6 +672,7 @@ const Dashboard: React.FC = () => {
             paddingBottom: '8px'
           }}>Humidity Trend</h3>
           <LineChart 
+            key={`humidity-chart-${selectedRange}-${processedData.length}`}
             data={processedData} 
             xAxisKey="timestamp" 
             yAxisKeys={[{ key: 'humidity', color: '#4dabf7', name: 'Humidity (%)' }]}

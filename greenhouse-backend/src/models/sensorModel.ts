@@ -19,18 +19,26 @@ class SensorModel {
 
 
   async getHistoricalData(hours = 24, limit = 100): Promise<SensorData[]> {
+    console.log(`Fetching historical data for last ${hours} hours, limit: ${limit}`);
 
+    // Daha basit sorgu: sadece en son verileri LIMIT ile alalım ve saatlere göre filtrelemeyi frontend'de yapalım
     const [rows] = await pool.query(
       `SELECT * FROM sensor_data 
-       WHERE timestamp >= DATE_SUB(NOW(), INTERVAL ? HOUR) 
        ORDER BY timestamp DESC
        LIMIT ?`,
-      [hours, limit]
+      [limit]
     );
     
-
+    console.log(`Retrieved ${(rows as any[]).length} historical records`);
     const data = rows as SensorData[];
     
+    // Debug first few records
+    if (data.length > 0) {
+      console.log('First record timestamp:', data[0].timestamp);
+      if (data.length > 1) {
+        console.log('Last record timestamp:', data[data.length - 1].timestamp);
+      }
+    }
 
     const sortedData = [...data].sort((a, b) => {
       return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
@@ -74,6 +82,43 @@ class SensorModel {
       [data.temperature, data.humidity, data.prediction, data.timestamp || new Date().toISOString()]
     );
     return (result as any).insertId;
+  }
+
+  /**
+   * Save multiple sensor data records in a batch for better performance
+   */
+  async saveSensorDataBatch(dataList: SensorData[]): Promise<number> {
+    if (dataList.length === 0) {
+      return 0;
+    }
+    
+    // Create the values part of the query for multiple inserts
+    const placeholders = dataList.map(() => '(?, ?, ?, ?)').join(', ');
+    const values = dataList.flatMap(data => [
+      data.temperature, 
+      data.humidity, 
+      data.prediction, 
+      data.timestamp || new Date().toISOString()
+    ]);
+    
+    const query = `INSERT INTO sensor_data (temperature, humidity, prediction, timestamp) VALUES ${placeholders}`;
+    
+    const [result] = await pool.query(query, values);
+    
+    return (result as any).affectedRows || 0;
+  }
+
+  /**
+   * Clear all sensor data from the database
+   */
+  async clearAllData(): Promise<number> {
+    try {
+      const [result] = await pool.query('DELETE FROM sensor_data');
+      return (result as any).affectedRows || 0;
+    } catch (error) {
+      console.error('Error clearing sensor data:', error);
+      throw error;
+    }
   }
 }
 

@@ -28,7 +28,20 @@ app.get('/', (req, res) => {
   res.send('Greenhouse Monitoring API is running');
 });
 
+// Test endpoint to generate data on demand
+app.get('/api/generate-test-data', (req, res) => {
+  try {
+    console.log('Manual data generation requested');
+    dataGenerator.generateOnDemand();
+    res.status(200).json({ message: 'Data generation triggered. Check server logs for details.' });
+  } catch (error) {
+    console.error('Error triggering data generation:', error);
+    res.status(500).json({ message: 'Error triggering data generation' });
+  }
+});
 
+// Explicitly start the data generator
+console.log('Starting data generator service from index.ts');
 dataGenerator.start();
 
 

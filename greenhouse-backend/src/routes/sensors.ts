@@ -9,7 +9,10 @@ router.get('/', sensorController.getCurrentData);
 // Get historical sensor data
 router.get('/history', sensorController.getHistoricalData);
 
-// Create new sensor reading
+// Create new sensor data entry
 router.post('/', sensorController.createSensorData);
+
+// Generate demo data
+router.post('/generate-demo', sensorController.generateDemoData);
 
 export default router;

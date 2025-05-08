@@ -1,8 +1,8 @@
 -- Greenhouse Monitoring System Database Setup
 
 -- Create database if it doesn't exist
-CREATE DATABASE IF NOT EXISTS greenhouse_db;
-USE greenhouse_db;
+CREATE DATABASE IF NOT EXISTS greenhouse;
+USE greenhouse;
 
 -- Create sensor data table
 CREATE TABLE IF NOT EXISTS sensor_data (

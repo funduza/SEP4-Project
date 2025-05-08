@@ -20,6 +20,8 @@ class DataGeneratorService {
    * Generate a random sensor reading with realistic changes from previous values
    */
   private generateSensorReading(): SensorData {
+    console.log('Generating new sensor reading...');
+    
     // Generate a small change from the last temperature (-1 to +1 degrees)
     const tempChange = (Math.random() * 2 - 1) * 0.5;
     // Generate a small change from the last humidity (-2 to +2 percent)
@@ -46,12 +48,29 @@ class DataGeneratorService {
       prediction = 'Alert';
     }
     
-    return {
+    // Generate a timestamp with hard-coded 2023 year
+    const now = new Date();
+    const year = 2023;
+    const month = now.getMonth();
+    const day = now.getDate();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+    
+    // Create timestamp string in ISO format with year set to 2023
+    const timestamp = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.000Z`;
+    
+    console.log('Generated timestamp:', timestamp);
+    
+    const sensorData = {
       temperature: Number(newTemp.toFixed(1)),
       humidity: Number(newHumidity.toFixed(1)),
       prediction,
-      timestamp: new Date().toISOString()
+      timestamp
     };
+    
+    console.log('Generated sensor data:', sensorData);
+    return sensorData;
   }
   
   /**
@@ -60,14 +79,18 @@ class DataGeneratorService {
   private async saveReading() {
     // Prevent multiple simultaneous data generations
     if (this.isGenerating) {
+      console.log('Already generating data, skipping this cycle');
       return;
     }
     
+    console.log('Starting to save new sensor reading...');
     this.isGenerating = true;
     
     try {
       const sensorData = this.generateSensorReading();
+      console.log('Attempting to save to database...');
       const insertId = await sensorModel.saveSensorData(sensorData);
+      console.log('Successfully saved sensor data with ID:', insertId);
     } catch (error) {
       console.error('Error generating and saving sensor data:', error);
     } finally {
@@ -80,9 +103,11 @@ class DataGeneratorService {
    */
   start() {
     if (this.isRunning) {
+      console.log('Data generator already running');
       return;
     }
     
+    console.log('Starting data generator service');
     this.isRunning = true;
     
     // Generate data immediately on start
@@ -90,8 +115,11 @@ class DataGeneratorService {
     
     // Then set up an interval for regular data generation
     this.intervalId = setInterval(() => {
+      console.log('Timer triggered, generating new data...');
       this.saveReading();
     }, this.intervalSeconds * 1000);
+    
+    console.log(`Data generator scheduled to run every ${this.intervalSeconds} seconds`);
   }
   
   /**
@@ -99,12 +127,22 @@ class DataGeneratorService {
    */
   stop() {
     if (!this.isRunning || !this.intervalId) {
+      console.log('Data generator not running');
       return;
     }
     
+    console.log('Stopping data generator service');
     clearInterval(this.intervalId);
     this.intervalId = null;
     this.isRunning = false;
+  }
+  
+  /**
+   * Generate a single reading on demand
+   */
+  generateOnDemand() {
+    console.log('Generating data on demand');
+    return this.saveReading();
   }
 }
 
