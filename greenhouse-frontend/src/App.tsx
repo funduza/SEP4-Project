@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import './App.css';
 import Dashboard from './components/Dashboard';
 import Home from './components/Home';
@@ -13,6 +14,8 @@ interface User {
   lastName: string | null;
   refCode: string;
 }
+
+
 
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
@@ -62,27 +65,29 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="App">
-        <Header 
-          isLoggedIn={!!token} 
-          username={user?.username || ''} 
-          onLogout={handleLogout} 
-        />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={
-            token ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
-          } />
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
-    </Router>
+    <ChakraProvider value={defaultSystem}>
+      <Router>
+        <div className="App">
+          <Header 
+            isLoggedIn={!!token} 
+            username={user?.username || ''} 
+            onLogout={handleLogout} 
+          />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={
+              token ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
+            } />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </ChakraProvider>
   );
 }
 
