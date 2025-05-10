@@ -9,7 +9,11 @@ import {
   Input,
   Text,
   VStack,
+  Alert,
+  AlertDescription,
+  Image,
 } from '@chakra-ui/react';
+import Header from './Header';
 
 interface LoginProps {
   onLogin: (token: string, user: any) => void;
@@ -130,34 +134,69 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <Flex
-      minH={'100vh'}
-      alignItems={'center'}
-      justifyContent={'center'}
-      bg={'gray.50'}
+    <Box
+      h="100vh"
+      w="100%"
+      bg={'#f0f9f0'}
+      position="fixed"
+      top={0}
+      left={0}
+      right={0}
+      bottom={0}
+      overflow="hidden"
+      display="flex"
+      flexDirection="column"
+      justifyContent="space-between"
     >
-      <Container
-        maxW={'md'}
-        bg={'white'}
-        boxShadow={'lg'}
-        p={8}
-        borderRadius={'lg'}
+      <Header isLoggedIn={false} username="" onLogout={() => {}} />
+      {/* Main content with login form */}
+      <Flex
+        flex="1"
+        width="100%"
+        alignItems="center"
+        justifyContent="center"
+        py={2}
       >
+      <Container
+        maxW={['sm', 'md', 'lg']}
+        bg={'white'}
+        boxShadow={'xl'}
+        p={[3, 4]}
+        borderRadius={'xl'}
+        position="relative"
+        zIndex={20}
+        mx={[4, 'auto']}
+      >
+        {/* Greenhouse Logo */}
+        <Flex justifyContent="center" mb={4}>
+          <Box width="150px" height="150px">
+            <Image 
+              src="https://i.ibb.co/F4NQcPfH/image.png" 
+              alt="Via Greenhouse Logo"
+              width="100%"
+              height="100%"
+              objectFit="contain"
+            />
+          </Box>
+        </Flex>
         <Heading
           textAlign={'center'}
-          mb={6}
-          color={'gray.700'}
+          mb={4}
+          color={'green.700'}
+          fontSize="2xl"
         >
-          {isLogin ? 'Login to Greenhouse' : 'Create an Account'}
+          {isLogin ? 'Welcome to Via GreenHouse' : 'Join Via GreenHouse'}
         </Heading>
 
         {error && (
           <Box
-            bg={'red.100'}
-            color={'red.700'}
+            bg="red.50"
+            color="red.700"
             p={3}
             mb={4}
-            borderRadius={'md'}
+            borderRadius="md"
+            borderLeft="4px solid"
+            borderColor="red.500"
           >
             {error}
           </Box>
@@ -165,63 +204,89 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
         <form onSubmit={handleSubmit}>
           <VStack gap={'4'} alignItems={'stretch'}>
-            <Box mb={4}>
-              <Text mb={2} fontWeight={'medium'}>Username *</Text>
+            <Box mb={3}>
+              <Text mb={1} fontWeight={'medium'}>Username *</Text>
               <Input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                size="md"
+                borderColor="gray.300"
+                _hover={{ borderColor: 'green.300' }}
+                _focus={{ borderColor: 'green.400', boxShadow: '0 0 0 1px #68D391' }}
               />
             </Box>
 
-            <Box mb={4}>
-              <Text mb={2} fontWeight={'medium'}>Password *</Text>
+            <Box mb={3}>
+              <Text mb={1} fontWeight={'medium'}>Password *</Text>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                size="md"
+                borderColor="gray.300"
+                _hover={{ borderColor: 'green.300' }}
+                _focus={{ borderColor: 'green.400', boxShadow: '0 0 0 1px #68D391' }}
               />
             </Box>
 
             {!isLogin && (
               <>
-                <Box mb={4}>
-                  <Text mb={2} fontWeight={'medium'}>Confirm Password *</Text>
+                <Box mb={3}>
+                  <Text mb={1} fontWeight={'medium'}>Confirm Password *</Text>
                   <Input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
+                    size="md"
+                    borderColor="gray.300"
+                    _hover={{ borderColor: 'green.300' }}
+                    _focus={{ borderColor: 'green.400', boxShadow: '0 0 0 1px #68D391' }}
                   />
                 </Box>
 
-                <Box mb={4}>
-                  <Text mb={2} fontWeight={'medium'}>First Name (Optional)</Text>
-                  <Input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                </Box>
+                <Flex direction={['column', 'row']} gap={[0, 4]} mb={3}>
+                  <Box flex={1} mb={[3, 0]}>
+                    <Text mb={1} fontWeight={'medium'}>First Name (Optional)</Text>
+                    <Input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      size="md"
+                      borderColor="gray.300"
+                      _hover={{ borderColor: 'green.300' }}
+                      _focus={{ borderColor: 'green.400', boxShadow: '0 0 0 1px #68D391' }}
+                    />
+                  </Box>
 
-                <Box mb={4}>
-                  <Text mb={2} fontWeight={'medium'}>Last Name (Optional)</Text>
-                  <Input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                </Box>
+                  <Box flex={1}>
+                    <Text mb={1} fontWeight={'medium'}>Last Name (Optional)</Text>
+                    <Input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      size="md"
+                      borderColor="gray.300"
+                      _hover={{ borderColor: 'green.300' }}
+                      _focus={{ borderColor: 'green.400', boxShadow: '0 0 0 1px #68D391' }}
+                    />
+                  </Box>
+                </Flex>
 
-                <Box mb={4}>
-                  <Text mb={2} fontWeight={'medium'}>Invitation Code *</Text>
+                <Box mb={3}>
+                  <Text mb={1} fontWeight={'medium'}>Invitation Code *</Text>
                   <Input
                     type="text"
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value)}
                     required
+                    size="md"
+                    borderColor="gray.300"
+                    _hover={{ borderColor: 'green.300' }}
+                    _focus={{ borderColor: 'green.400', boxShadow: '0 0 0 1px #68D391' }}
                   />
                 </Box>
               </>
@@ -229,12 +294,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             <Button
               type="submit"
-              colorScheme="blue"
+              colorScheme="green"
               size="lg"
               fontSize="md"
               disabled={loading}
               width="100%"
               mt={4}
+              boxShadow="sm"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'md' }}
+              transition="all 0.2s"
             >
               {loading ? 
                 (isLogin ? 'Logging in...' : 'Creating account...') : 
@@ -243,20 +311,126 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </VStack>
         </form>
 
-        <Text textAlign="center" mt={6}>
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
+        <Flex mt={3} justifyContent="center" alignItems="center">
+          <Text fontSize="sm">
+            {isLogin ? "Don't have an account?" : "Already have an account?"}
+          </Text>
           <Button
             variant="ghost"
-            colorScheme="blue"
+            colorScheme="green"
             onClick={toggleMode}
             size="sm"
-            ml={2}
+            ml={1}
+            fontWeight="bold"
+            height="auto"
+            py={1}
+            _hover={{ bg: 'green.50' }}
           >
             {isLogin ? 'Sign up' : 'Sign in'}
           </Button>
-        </Text>
+        </Flex>
       </Container>
-    </Flex>
+      </Flex>
+      
+      {/* Bottom section with grass and plants */}
+      <Box
+        width="100%"
+        position="relative"
+        height="100px"
+      >
+        {/* Grass at the bottom */}
+        <Box
+          position="fixed"
+          bottom="0"
+          left="0"
+          width="100%"
+          height={['70px', '100px']}
+          zIndex={12}
+          backgroundImage={`url('https://freepngimg.com/download/grass/26-grass-png-image-green-picture.png')`}
+          backgroundRepeat="repeat-x"
+          backgroundSize={['auto 100px', 'auto 130px']}
+          backgroundPosition="bottom center"
+          display={['block']}
+        />
+
+        
+        {/* Tree on left - behind grass */}
+        <Box
+          position="fixed"
+          bottom="10px"
+          left="2%"
+          width={['400px', '500px', '600px']}
+          height={['343px', '428px', '513px']}
+          zIndex={9}
+          display={['none', 'none', 'block']}
+        >
+          <Image
+            src="https://i.ibb.co/kg31X8Kq/image.png"
+            alt="Tree"
+            objectFit="contain"
+            width="100%"
+            height="100%"
+          />
+        </Box>
+        
+        {/* Orange flower on right - above grass */}
+        <Box
+          position="fixed"
+          bottom="20px"
+          right={['5%', '10%']}
+          width={['80px', '100px', '120px']}
+          height={['80px', '100px', '120px']}
+          zIndex={13}
+          display={['none', 'block']}
+        >
+          <Image
+            src="https://static.vecteezy.com/system/resources/previews/022/541/396/non_2x/floral-illustration-design-in-orange-color-free-png.png"
+            alt="Orange Flower"
+            objectFit="contain"
+            width="100%"
+            height="100%"
+          />
+        </Box>
+        
+        {/* Flower pot in middle */}
+        <Box
+          position="fixed"
+          bottom="0px"
+          left={['30%', '35%', '40%']}
+          width={['80px', '100px', '120px']}
+          height={['80px', '100px', '120px']}
+          zIndex={13}
+          display={['none', 'block']}
+        >
+          <Image
+            src="https://static.vecteezy.com/system/resources/previews/009/384/082/non_2x/flower-in-pot-clipart-design-illustration-free-png.png"
+            alt="Flower in Pot"
+            objectFit="contain"
+            width="100%"
+            height="100%"
+          />
+        </Box>
+        
+        {/* Flower image */}
+        <Box
+          position="fixed"
+          bottom="30px"
+          left="75%"
+          width={['80px', '100px', '120px']}
+          height={['80px', '100px', '120px']}
+          zIndex={13}
+          display={['none', 'block']}
+        >
+          <Image
+            src="https://pngcore.com/files/preview/800x800/11696259736vlogkdkpb1qxokuso8bkvzwexrpzuonmqcfcz49u9rvp4p0ktmjmkklh2gsboyrhfg2li5rzzosux3j8za4uyahrh0mwg6cok2fk.png"
+            alt="Flower"
+            objectFit="contain"
+            width="100%"
+            height="100%"
+          />
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

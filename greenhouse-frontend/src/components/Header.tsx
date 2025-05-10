@@ -1,5 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import {
+  Box,
+  Flex,
+  HStack,
+  Text,
+  Button,
+  Image,
+} from '@chakra-ui/react';
 
 interface HeaderProps {
   isLoggedIn: boolean;
@@ -11,94 +19,108 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, username, onLogout }) => {
   const location = useLocation();
   
   return (
-    <header style={{
-      backgroundColor: '#f8f9fa',
-      padding: '10px 20px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      marginBottom: '20px'
-    }}>
-      <nav style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <div>
-          <Link to="/" style={{
-            textDecoration: 'none',
-            color: '#333',
-            fontSize: '20px',
-            fontWeight: 'bold'
-          }}>
-            Greenhouse Monitoring
-          </Link>
-        </div>
+    <Box
+      as="header"
+      bg="white"
+      py={3}
+      px={5}
+      boxShadow="sm"
+      borderBottom="1px"
+      borderColor="gray.200"
+    >
+      <Flex
+        as="nav"
+        justify="space-between"
+        align="center"
+        maxW="container.xl"
+        mx="auto"
+      >
+        <Flex alignItems="center">
+          <Box width="40px" height="40px" mr={2}>
+            <Image 
+              src="https://i.ibb.co/v67KWPDs/1image.png" 
+              alt="Via GreenHouse Logo"
+              width="100%"
+              height="100%"
+              objectFit="contain"
+            />
+          </Box>
+          <Box fontSize="xl" fontWeight="bold">
+            <Link 
+              to="/"
+              style={{
+                textDecoration: 'none',
+                color: '#2e7d32',
+              }}
+            >
+              Via GreenHouse
+            </Link>
+          </Box>
+        </Flex>
         
-        <div style={{
-          display: 'flex',
-          gap: '20px',
-          alignItems: 'center'
-        }}>
-          <Link to="/" style={{
-            textDecoration: 'none',
-            color: location.pathname === '/' ? '#4CAF50' : '#333',
-            fontWeight: location.pathname === '/' ? 'bold' : 'normal'
-          }}>
-            Home
-          </Link>
+        <HStack gap={6} alignItems="center">
+          <Box>
+            <Link 
+              to="/"
+              style={{
+                textDecoration: 'none',
+                color: location.pathname === '/' ? '#22c35e' : '#4a5568',
+                fontWeight: location.pathname === '/' ? 'bold' : 'normal'
+              }}
+            >
+              Home
+            </Link>
+          </Box>
           
           {isLoggedIn ? (
             <>
-              <Link to="/dashboard" style={{
-                textDecoration: 'none',
-                color: location.pathname === '/dashboard' ? '#4CAF50' : '#333',
-                fontWeight: location.pathname === '/dashboard' ? 'bold' : 'normal'
-              }}>
-                Dashboard
-              </Link>
-              
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                marginLeft: '20px',
-                paddingLeft: '20px',
-                borderLeft: '1px solid #ddd'
-              }}>
-                <span style={{ 
-                  color: '#666',
-                  fontSize: '14px'
-                }}>
-                  Welcome, <strong>{username}</strong>
-                </span>
-                
-                <button 
-                  onClick={onLogout}
+              <Box>
+                <Link 
+                  to="/dashboard"
                   style={{
-                    backgroundColor: '#f44336',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '6px 12px',
-                    fontSize: '14px',
-                    cursor: 'pointer'
+                    textDecoration: 'none',
+                    color: location.pathname === '/dashboard' ? '#22c35e' : '#4a5568',
+                    fontWeight: location.pathname === '/dashboard' ? 'bold' : 'normal'
                   }}
                 >
+                  Dashboard
+                </Link>
+              </Box>
+              
+              <Box borderLeft="1px" borderColor="gray.200" height="20px" mx={2} />
+              
+              <HStack gap={4}>
+                <Text fontSize="sm" color="gray.600">
+                  Welcome, <Text as="span" fontWeight="bold">{username}</Text>
+                </Text>
+                
+                <Button
+                  onClick={onLogout}
+                  size="sm"
+                  colorScheme="red"
+                  variant="solid"
+                >
                   Logout
-                </button>
-              </div>
+                </Button>
+              </HStack>
             </>
           ) : (
-            <Link to="/login" style={{
-              textDecoration: 'none',
-              color: location.pathname === '/login' ? '#4CAF50' : '#333',
-              fontWeight: location.pathname === '/login' ? 'bold' : 'normal'
-            }}>
-              Login
-            </Link>
+            <Box>
+              <Link 
+                to="/login"
+                style={{
+                  textDecoration: 'none',
+                  color: location.pathname === '/login' ? '#22c35e' : '#4a5568',
+                  fontWeight: location.pathname === '/login' ? 'bold' : 'normal'
+                }}
+              >
+                Login
+              </Link>
+            </Box>
           )}
-        </div>
-      </nav>
-    </header>
+        </HStack>
+      </Flex>
+    </Box>
   );
 };
 
