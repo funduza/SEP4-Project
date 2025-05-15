@@ -87,6 +87,19 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, username, onLogout }) => {
                 </Link>
               </Box>
               
+              <Box>
+                <Link 
+                  to="/devices"
+                  style={{
+                    textDecoration: 'none',
+                    color: location.pathname === '/devices' ? '#22c35e' : '#4a5568',
+                    fontWeight: location.pathname === '/devices' ? 'bold' : 'normal'
+                  }}
+                >
+                  Devices
+                </Link>
+              </Box>
+              
               <Box borderLeft="1px" borderColor="gray.200" height="20px" mx={2} />
               
               <HStack gap={4}>
