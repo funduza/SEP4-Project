@@ -31,11 +31,9 @@ export class DeviceModel {
   
   // Static constructor to ensure device_logs table exists
   static {
-    // Initialize the device_logs table
     (async () => {
       const connection = await pool.getConnection();
       try {
-        // Create device_logs table if it doesn't exist
         await connection.query(`
           CREATE TABLE IF NOT EXISTS device_logs (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -65,12 +63,10 @@ export class DeviceModel {
   public static async getAllDevices(): Promise<Device[]> {
     const connection: PoolConnection = await pool.getConnection();
     try {
-      // Get all devices from DB
       const [devices] = await connection.query<Device[]>(
         'SELECT * FROM devices'
       );
 
-      // Update last_update timestamp for each device
       for (const device of devices) {
         await connection.query(
           'UPDATE devices SET last_update = NOW() WHERE id = ?',
@@ -78,12 +74,10 @@ export class DeviceModel {
         );
       }
 
-      // Process the devices to add frontend properties
       return devices.map(device => {
         const isInteractive = device.type === 'actuator';
         const isOn = device.status === 'Active';
         
-        // Add random values for sensor readings
         let value;
         if (device.type === 'sensor') {
           if (device.name.toLowerCase().includes('temperature')) {
@@ -97,10 +91,8 @@ export class DeviceModel {
           }
         }
         
-        // Set current time as last_update
         device.last_update = new Date();
         
-        // Add icon and unit based on device type
         const icon = this.getDeviceIcon(device.name);
         const unit = this.getDeviceUnit(device.name);
         
@@ -128,7 +120,6 @@ export class DeviceModel {
   ): Promise<Device | null> {
     const connection: PoolConnection = await pool.getConnection();
     try {
-      // Get current device status for logging
       const [deviceRows] = await connection.query<Device[]>(
         'SELECT * FROM devices WHERE id = ?',
         [id]
@@ -140,17 +131,14 @@ export class DeviceModel {
       
       const oldStatus = deviceRows[0].status;
       
-      // Convert on/off to Active/Inactive
       const dbStatus = newStatus === 'on' ? 'Active' : 'Inactive';
       
-      // Update both status and last_update timestamp
       const [result] = await connection.query<ResultSetHeader>(
         'UPDATE devices SET status = ?, last_update = NOW() WHERE id = ?',
         [dbStatus, id]
       );
       
       if (result.affectedRows > 0) {
-        // Log the status change
         await this.logDeviceAction({
           device_id: id,
           user_id: userInfo?.userId || null,
@@ -160,7 +148,6 @@ export class DeviceModel {
           new_value: dbStatus
         });
         
-        // Return updated device
         return this.getDeviceById(id);
       }
       
@@ -181,7 +168,6 @@ export class DeviceModel {
   ): Promise<Device | null> {
     const connection: PoolConnection = await pool.getConnection();
     try {
-      // First check if the device exists and is a sensor
       const [deviceRows] = await connection.query<Device[]>(
         'SELECT * FROM devices WHERE id = ? AND type = "sensor"',
         [id]
@@ -191,18 +177,14 @@ export class DeviceModel {
         return null; // Device not found or not a sensor
       }
       
-      // Get current value for logging (this is a mock value as we don't store it in DB)
       const oldValue = this.getMockValue(deviceRows[0].name);
       
-      // We don't store the value in the DB, but we update the last_update timestamp
-      // when a sensor value changes
       const [result] = await connection.query<ResultSetHeader>(
         'UPDATE devices SET last_update = NOW() WHERE id = ?',
         [id]
       );
       
       if (result.affectedRows > 0) {
-        // Log the value change
         await this.logDeviceAction({
           device_id: id,
           user_id: userInfo?.userId || null,
@@ -212,7 +194,6 @@ export class DeviceModel {
           new_value: newValue.toString()
         });
         
-        // Return updated device
         return this.getDeviceById(id);
       }
       
@@ -291,7 +272,6 @@ export class DeviceModel {
   ): Promise<DeviceLog[]> {
     const connection: PoolConnection = await pool.getConnection();
     try {
-      // Build the query with deviceId filter
       const query = `
         SELECT * FROM device_logs
         WHERE device_id = ?
@@ -321,23 +301,19 @@ export class DeviceModel {
   ): Promise<DeviceLog[]> {
     const connection: PoolConnection = await pool.getConnection();
     try {
-      // Build the query with optional filters
       let query = 'SELECT * FROM device_logs WHERE 1=1';
       const params: any[] = [];
       
-      // Add device filter if provided
       if (deviceId !== null) {
         query += ' AND device_id = ?';
         params.push(deviceId);
       }
       
-      // Add action type filter if provided
       if (actionType !== null && actionType !== 'all') {
         query += ' AND action_type = ?';
         params.push(actionType);
       }
       
-      // Add order by, limit and offset
       query += ' ORDER BY log_time DESC LIMIT ? OFFSET ?';
       params.push(limit, offset);
       
@@ -364,7 +340,6 @@ export class DeviceModel {
         return null;
       }
 
-      // Update last_update timestamp
       await connection.query(
         'UPDATE devices SET last_update = NOW() WHERE id = ?',
         [id]
@@ -374,7 +349,6 @@ export class DeviceModel {
       const isInteractive = device.type === 'actuator';
       const isOn = device.status === 'Active';
       
-      // Add random values for sensor readings
       let value;
       if (device.type === 'sensor') {
         if (device.name.toLowerCase().includes('temperature')) {
@@ -388,10 +362,8 @@ export class DeviceModel {
         }
       }
       
-      // Update last_update in the response object
       device.last_update = new Date();
       
-      // Add icon and unit based on device type
       const icon = this.getDeviceIcon(device.name);
       const unit = this.getDeviceUnit(device.name);
       
@@ -488,11 +460,9 @@ export class DeviceModel {
     if (name.includes('co2')) return 'bi-cloud';
     if (name.includes('soil')) return 'bi-flower1';
     
-    // Default icons based on device type
     if (name.includes('sensor')) return 'bi-activity';
     if (name.includes('actuator')) return 'bi-toggle-on';
     
-    // Fallback default
     return 'bi-device-hdd';
   }
   
@@ -508,7 +478,6 @@ export class DeviceModel {
     if (name.includes('co2')) return 'ppm';
     if (name.includes('soil moisture')) return '%';
     
-    // No unit for actuators and other sensor types
     return undefined;
   }
 }

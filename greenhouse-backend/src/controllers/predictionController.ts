@@ -15,10 +15,8 @@ class PredictionController {
   async testDatabaseConnection(req: Request, res: Response) {
     try {
 
-      // First ensure the table exists
       await predictionModel.ensureTableExists();
       
-      // Create a test record
       const now = new Date();
       const formattedTimestamp = now.toISOString().slice(0, 19).replace('T', ' ');
       
@@ -31,7 +29,6 @@ class PredictionController {
         timestamp: formattedTimestamp
       };
       
-      // Attempt to save a single test record
       const insertId = await predictionModel.saveSinglePrediction(testData);
       
       return res.status(200).json({
@@ -58,9 +55,8 @@ class PredictionController {
   async getPredictions(req: Request, res: Response) {
     try {
       const range = (req.query.range as string) || '24h';
-      let hours = 24; // Default to 24 hours
+      let hours = 24;
       
-      // Parse the range parameter
       switch (range) {
         case '6h':
           hours = 6;
@@ -75,20 +71,18 @@ class PredictionController {
           hours = 72;
           break;
         case '7d':
-          hours = 168; // One week
+          hours = 168;
           break;
         case '14d':
-          hours = 336; // Two weeks
+          hours = 336;
           break;
         case '30d':
-          hours = 720; // Approximately one month
+          hours = 720;
           break;
         default:
           hours = 24;
       }
       
-      // Use a much higher limit to ensure we get all data
-      // Frontend can filter/sample as needed
       const limit = parseInt(req.query.limit as string) || 5000;
       
       let predictionData: PredictionData[] = [];
@@ -98,7 +92,6 @@ class PredictionController {
       try {
         predictionData = await predictionModel.getPredictions(hours, limit);
         
-        // If no data in database, return empty flag
         if (!predictionData || predictionData.length === 0) {
           isEmpty = true;
         }
@@ -107,7 +100,6 @@ class PredictionController {
         throw dbError; // Let outer catch block handle this error
       }
       
-      // Return the data or empty flag
       res.status(200).json({ 
         data: predictionData,
         empty: isEmpty,
@@ -127,12 +119,10 @@ class PredictionController {
    */
   async generatePredictions(req: Request, res: Response) {
     try {
-      // Ensure both tables exist
       await predictionModel.ensureTableExists();
       await predictionModel.ensureSensorTableAndGetLatest();
       
       try {
-        // Generate new predictions
         const count = await predictionModel.generatePredictions();
         
         if (count === 0) {
@@ -143,7 +133,6 @@ class PredictionController {
           });
         }
         
-        // Return success response
         return res.status(200).json({
           success: true,
           message: `Successfully generated ${count} prediction records`,

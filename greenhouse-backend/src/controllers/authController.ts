@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import userModel from '../models/userModel';
 import dotenv from 'dotenv';
-import { User } from '../models/userModel';
 
 
 dotenv.config();
@@ -138,7 +137,6 @@ class AuthController {
         { expiresIn: JWT_EXPIRES_IN } as SignOptions
       );
 
-      // Return user info and token
       res.status(201).json({
         success: true,
         message: 'Registration successful',

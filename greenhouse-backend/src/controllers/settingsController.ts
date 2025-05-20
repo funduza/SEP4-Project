@@ -10,7 +10,6 @@ interface UserProfile {
 }
 
 const settingsController = {
-  // Get user profile data
   async getUserProfile(req: Request, res: Response) {
     try {
       if (!req.user) {
@@ -49,7 +48,6 @@ const settingsController = {
     }
   },
   
-  // Update user profile data
   async updateUserProfile(req: Request, res: Response) {
     try {
       if (!req.user) {
@@ -62,7 +60,6 @@ const settingsController = {
       const userId = req.user.id;
       const { firstName, lastName } = req.body;
       
-      // Validate the input
       if (firstName && typeof firstName !== 'string') {
         return res.status(400).json({
           success: false,
@@ -77,13 +74,11 @@ const settingsController = {
         });
       }
       
-      // Update the user profile
       await pool.query(
         'UPDATE users SET first_name = ?, last_name = ? WHERE id = ?',
         [firstName, lastName, userId]
       );
       
-      // Get the updated user data
       const [rows] = await pool.query(
         'SELECT id, username, first_name as firstName, last_name as lastName, ref_code as refCode FROM users WHERE id = ?',
         [userId]
