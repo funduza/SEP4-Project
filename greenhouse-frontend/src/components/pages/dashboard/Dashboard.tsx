@@ -23,114 +23,8 @@ import {
   formatTimeAgo, 
   formatDateTime
 } from '../../../utils';
-
-// Custom icons implemented using SVG instead of relying on external packages
-const CustomIcon = (props: any) => {
-  const { children, ...rest } = props;
-  return (
-    <Box
-      as="span"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      lineHeight="1em"
-      flexShrink={0}
-      height="100%"
-      width="100%"
-      color="currentColor"
-      {...rest}
-    >
-      {children}
-    </Box>
-  );
-};
-
-// SVG icons defined inline to avoid package dependency issues
-const icons = {
-  thermometer: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M14,14.76V3.5a3,3,0,0,0-3-3H11a3,3,0,0,0-3,3V14.76a5,5,0,1,0,6,0ZM11,5A1,1,0,0,1,12,4a1,1,0,0,1,0,2A1,1,0,0,1,11,5Z" />
-      </svg>
-    </CustomIcon>
-  ),
-  droplet: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M12,1.85a11.25,11.25,0,0,1,2.53,2.58C16.8,7.44,18,10.82,18,14a6,6,0,0,1-12,0c0-3.18,1.2-6.56,3.47-9.57A11.25,11.25,0,0,1,12,1.85Z" />
-      </svg>
-    </CustomIcon>
-  ),
-  alertCircle: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" />
-        <path d="M12,7a1,1,0,0,0-1,1v4a1,1,0,0,0,2,0V8A1,1,0,0,0,12,7Z" />
-        <circle cx="12" cy="16" r="1" />
-      </svg>
-    </CustomIcon>
-  ),
-  clock: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" />
-        <path d="M12,6a1,1,0,0,0-1,1v5a1,1,0,0,0,.293.707l3,3a1,1,0,0,0,1.414-1.414L13,11.586V7A1,1,0,0,0,12,6Z" />
-      </svg>
-    </CustomIcon>
-  ),
-  refresh: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M12,5V2L8,6l4,4V7a5,5,0,0,1,5,5,5,5,0,0,1-5,5,5,5,0,0,1-5-5H5a7,7,0,0,0,7,7,7,7,0,0,0,7-7A7,7,0,0,0,12,5Z" />
-      </svg>
-    </CustomIcon>
-  ),
-  checkCircle: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" />
-        <path d="M16.58,7.58L10,14.17l-2.59-2.58L6,13l4,4,8-8Z" />
-      </svg>
-    </CustomIcon>
-  ),
-  alertTriangle: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M22.56,16.3,14.89,3.58a3.43,3.43,0,0,0-5.78,0L1.44,16.3a3,3,0,0,0-.05,3A3.37,3.37,0,0,0,4.33,21H19.67a3.37,3.37,0,0,0,2.94-1.66A3,3,0,0,0,22.56,16.3ZM12,17a1,1,0,1,1,1-1A1,1,0,0,1,12,17Zm1-5a1,1,0,0,1-2,0V8a1,1,0,0,1,2,0Z" />
-      </svg>
-    </CustomIcon>
-  ),
-  barChart: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M21,20H4V18H21ZM8,17H4V10H8ZM14,17H10V3H14ZM20,17H16V7H20Z" />
-      </svg>
-    </CustomIcon>
-  ),
-  database: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M12,1C6.5,1,2,2.79,2,5S6.5,9,12,9s10-1.79,10-4S17.5,1,12,1ZM2,11V7.5c0,2.21,4.5,4,10,4s10-1.79,10-4V11c0,2.21-4.5,4-10,4S2,13.21,2,11Zm20,5.5V20c0,2.21-4.5,4-10,4S2,22.21,2,20V16.5c0,2.21,4.5,4,10,4S22,18.71,22,16.5Z" />
-      </svg>
-    </CustomIcon>
-  ),
-  co2: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2ZM8,13.5A1.5,1.5,0,1,1,9.5,12,1.5,1.5,0,0,1,8,13.5ZM9,9H6V7h3Zm3,1.5A1.5,1.5,0,1,1,13.5,9,1.5,1.5,0,0,1,12,10.5Zm3,3A1.5,1.5,0,1,1,16.5,12,1.5,1.5,0,0,1,15,13.5Zm0-4.5H15V7h3v2H15Z" />
-      </svg>
-    </CustomIcon>
-  ),
-  light: (props: any) => (
-    <CustomIcon {...props}>
-      <svg viewBox="0 0 24 24" width="2.5em" height="2.5em" fill="currentColor" strokeWidth="0.4">
-        <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"/>
-        <path d="M12,6a6,6,0,0,0-6,6,5.89,5.89,0,0,0,.5,2.5L12,12l5.5,2.5A5.89,5.89,0,0,0,18,12,6,6,0,0,0,12,6Z"/>
-        <path d="M12,8a4,4,0,0,1,4,4,3.91,3.91,0,0,1-.33,1.5L12,13.5l-3.67-1A3.91,3.91,0,0,1,8,12,4,4,0,0,1,12,8Z"/>
-      </svg>
-    </CustomIcon>
-  ),
-};
+// Import icons from SensorIcons
+import { icons } from '../../ui/icons/SensorIcons';
 
 interface SensorData {
   id?: number;
@@ -175,7 +69,7 @@ const Dashboard: React.FC = () => {
   const [noDataInRange, setNoDataInRange] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(() => {
     const saved = localStorage.getItem('autoRefresh');
-    return saved ? JSON.parse(saved) : true; // varsayılan olarak açık
+    return saved ? JSON.parse(saved) : true; // default is on
   });
   
   const lastUpdated = useRef<Date | null>(null);
@@ -185,7 +79,7 @@ const Dashboard: React.FC = () => {
   const refreshInterval = 10000; 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
-  // Auto refresh için interval ref
+  // Auto refresh interval ref
   const autoRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -244,7 +138,7 @@ const Dashboard: React.FC = () => {
         const processed: SensorData = {
           id: item.id || Math.random(),
           temperature: item.temperature || 0,
-          humidity: item.air_humidity || item.humidity || 0, // Eski API uyumluluğu için
+          humidity: item.air_humidity || item.humidity || 0, // For backward compatibility with old API
           soil_humidity: item.soil_humidity || 0,
           co2_level: item.co2_level || 0,
           light_lux: item.light_lux || 0,
@@ -272,16 +166,16 @@ const Dashboard: React.FC = () => {
       console.log('Formatted data length:', formattedData.length);
       
       if (formattedData.length > 0) {
-        // Verileri zaman damgasına göre sırala
+        // Sort data by timestamp
         formattedData.sort((a: SensorData, b: SensorData) => {
           return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
         });
 
-        // En son verinin zamanını al
+        // Get the timestamp of the last data
         const lastDataTime = new Date(formattedData[formattedData.length - 1].timestamp);
         console.log('Last data timestamp:', lastDataTime.toISOString());
         
-        // Zaman aralığını hesapla
+        // Calculate time range
         const hoursToSubtract = range === '1h' ? 1 : 
                              range === '6h' ? 6 : 
                              range === '12h' ? 12 : 
@@ -294,7 +188,7 @@ const Dashboard: React.FC = () => {
         console.log('Past time:', pastTime.toISOString());
         console.log('Last data time:', lastDataTime.toISOString());
         
-        // Verileri filtrele
+        // Filter data
         const filteredByTimeRange = formattedData.filter((item: SensorData) => {
           const itemDate = new Date(item.timestamp);
           const isInRange = itemDate >= pastTime && itemDate <= lastDataTime;
@@ -347,7 +241,7 @@ const Dashboard: React.FC = () => {
       const cleanedData: SensorData = {
         id: sensorData.id,
         temperature: sensorData.temperature,
-        humidity: sensorData.air_humidity || sensorData.humidity, // Eski API uyumluluğu için
+        humidity: sensorData.air_humidity || sensorData.humidity, // For backward compatibility with old API
         soil_humidity: sensorData.soil_humidity || 0,
         co2_level: sensorData.co2_level || 0,
         light_lux: sensorData.light_lux || 0,
@@ -390,11 +284,11 @@ const Dashboard: React.FC = () => {
       setData(cleanedData);
       setDataSource('live');
       
-      // Her veri güncellemesinde secondsAgo'yu sıfırla
+      // Reset secondsAgo on each data update
       updateTimeRef.current = Date.now();
       setSecondsAgo(0);
       
-      // Timestamp'i UTC olarak parse et ve lastUpdated'ı güncelle
+      // Parse timestamp as UTC and update lastUpdated
       const [datePart, timePart] = cleanedData.timestamp.split('T');
       const [year, month, day] = datePart.split('-');
       const [hours, minutes, seconds] = timePart.split(':');
@@ -420,22 +314,20 @@ const Dashboard: React.FC = () => {
     }
   }, [API_URL, fetchHistoricalData, historicalData.length]);
 
-  // Auto refresh ayarını değiştirme fonksiyonu
+  // Auto refresh toggle function
   const toggleAutoRefresh = () => {
     const newValue = !autoRefresh;
     setAutoRefresh(newValue);
     localStorage.setItem('autoRefresh', JSON.stringify(newValue));
     
     if (newValue) {
-      // Auto refresh'i başlat
       startAutoRefresh();
     } else {
-      // Auto refresh'i durdur
       stopAutoRefresh();
     }
   };
 
-  // Auto refresh'i başlat
+  // Start auto refresh
   const startAutoRefresh = useCallback(() => {
     if (autoRefreshIntervalRef.current) {
       clearInterval(autoRefreshIntervalRef.current);
@@ -443,10 +335,10 @@ const Dashboard: React.FC = () => {
     
     autoRefreshIntervalRef.current = setInterval(() => {
       fetchHistoricalData();
-    }, 10000); // 10 saniyede bir güncelle
+    }, 10000); // Update every 10 seconds
   }, [fetchHistoricalData]);
 
-  // Auto refresh'i durdur
+  // Stop auto refresh
   const stopAutoRefresh = useCallback(() => {
     if (autoRefreshIntervalRef.current) {
       clearInterval(autoRefreshIntervalRef.current);
@@ -454,7 +346,7 @@ const Dashboard: React.FC = () => {
     }
   }, []);
 
-  // Component mount olduğunda auto refresh'i başlat
+  // Start auto refresh when component mounts
   useEffect(() => {
     if (autoRefresh) {
       startAutoRefresh();
@@ -564,10 +456,10 @@ const Dashboard: React.FC = () => {
     </Box>
   );
 
-  // Grafik için formatXAxis fonksiyonunu güncelle
+  // Update formatXAxis function for chart
   const formatChartTimestamp = (value: string) => {
     try {
-      // Timestamp'i UTC olarak parse et
+      // Parse timestamp as UTC
       const [datePart, timePart] = value.split('T');
       const [year, month, day] = datePart.split('-');
       const [hours, minutes] = timePart.split(':');
@@ -581,7 +473,7 @@ const Dashboard: React.FC = () => {
       ));
       
       if (selectedRange === '1h' || selectedRange === '6h' || selectedRange === '12h' || selectedRange === '24h') {
-        // Saat gösterimi için UTC kullan
+        // Use UTC for time display
         return utcDate.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
@@ -589,7 +481,7 @@ const Dashboard: React.FC = () => {
           timeZone: 'UTC'
         });
       } else {
-        // Tarih gösterimi için UTC kullan
+        // Use UTC for date display
         return utcDate.toLocaleDateString('en-US', {
           day: '2-digit',
           month: '2-digit',
@@ -1051,43 +943,38 @@ const Dashboard: React.FC = () => {
               <Box mr={2}>{icons.clock({ boxSize: 4, color: "gray.500" })}</Box>
               <Text fontSize="sm" color="gray.500" mr={3}>
                 Last updated: {data ? (() => {
-                  try {
-                    // Veritabanından gelen timestamp'i UTC olarak işle
-                    const timestamp = data.timestamp;
-                    console.log('Raw timestamp from database:', timestamp);
-                    
-                    // Timestamp'i UTC olarak parse et
-                    const [datePart, timePart] = timestamp.split('T');
-                    const [year, month, day] = datePart.split('-');
-                    const [hours, minutes, seconds] = timePart.split(':');
-                    
-                    // UTC olarak yeni bir tarih oluştur
-                    const utcDate = new Date(Date.UTC(
-                      parseInt(year),
-                      parseInt(month) - 1,
-                      parseInt(day),
-                      parseInt(hours),
-                      parseInt(minutes),
-                      parseInt(seconds)
-                    ));
-                    
-                    console.log('UTC Date:', utcDate.toISOString());
-                    
-                    // UTC tarihini yerel formatta göster
-                    return utcDate.toLocaleString('en-US', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit',
-                      hour12: false,
-                      timeZone: 'UTC' // UTC olarak göster
-                    });
-                  } catch (e) {
-                    console.error('Date formatting error:', e);
-                    return data.timestamp;
-                  }
+                  // Process timestamp from database as UTC
+                  const timestamp = data.timestamp;
+                  console.log('Raw timestamp from database:', timestamp);
+                  
+                  // Parse timestamp as UTC
+                  const [datePart, timePart] = timestamp.split('T');
+                  const [year, month, day] = datePart.split('-');
+                  const [hours, minutes, seconds] = timePart.split(':');
+                  
+                  // Create new date as UTC
+                  const utcDate = new Date(Date.UTC(
+                    parseInt(year),
+                    parseInt(month) - 1,
+                    parseInt(day),
+                    parseInt(hours),
+                    parseInt(minutes),
+                    parseInt(seconds)
+                  ));
+                  
+                  console.log('UTC Date:', utcDate.toISOString());
+                  
+                  // Show UTC date in local format
+                  return utcDate.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false,
+                    timeZone: 'UTC' // Show as UTC
+                  });
                 })() : 'Loading...'}
               </Text>
               
