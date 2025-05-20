@@ -761,6 +761,7 @@ const Dashboard: React.FC = () => {
             columns={{ base: 1, sm: 2, md: 4 }} 
             gap={{ base: 4, md: 6 }} 
             mb={6}
+            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "1fr 1.5fr 1fr 1fr" }}
           >
             {/* Temperature Card */}
             {loading ? (
@@ -770,6 +771,7 @@ const Dashboard: React.FC = () => {
                 _hover={{ transform: 'translateY(-5px)', boxShadow: 'lg' }}
                 _active={{ transform: 'scale(0.98)' }}
                 width="100%"
+                gridColumn={{ base: "1", sm: "1", md: "1" }}
               >
                 <Box
                   bg="white"
@@ -837,6 +839,7 @@ const Dashboard: React.FC = () => {
                 _hover={{ transform: 'translateY(-5px)', boxShadow: 'lg' }}
                 _active={{ transform: 'scale(0.98)' }}
                 width="100%"
+                gridColumn={{ base: "1", sm: "2", md: "2" }}
               >
                 <Box
                   bg="white"
@@ -850,8 +853,8 @@ const Dashboard: React.FC = () => {
                   width="100%"
                 >
                   <Flex 
-                    align="center" 
-                    mb={4} 
+                    align="center"
+                    mb={4}
                     direction="row"
                     textAlign="left"
                     gap={4}
@@ -875,23 +878,46 @@ const Dashboard: React.FC = () => {
                           ensureNumber(data?.humidity || 0) < 50 ? 'blue.500' : 'green.500'
                       })}
                     </Box>
-                    <Box flex="1">
-                      <Text fontWeight="bold" fontSize={{ base: "md", md: "lg" }} color="gray.600">Air + Soil Humidity</Text>
-                      <Flex align="center" gap={2}>
+                    <Box flex="1" minW="0">
+                      <Text 
+                        fontWeight="bold" 
+                        fontSize={{ base: "xs", md: "lg" }} 
+                        color="gray.600"
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                        whiteSpace="nowrap"
+                      >
+                        Air + Soil Humidity
+                      </Text>
+                      <Flex 
+                        align="center" 
+                        gap={{ base: 0.5, md: 2 }} 
+                        flexWrap="nowrap"
+                        minW="0"
+                        overflow="hidden"
+                      >
                         <Text 
-                          fontSize={{ base: "2xl", md: "3xl" }} 
+                          fontSize={{ base: "lg", md: "3xl" }} 
                           fontWeight="bold"
                           color={ensureNumber(data?.humidity || 0) > 65 ? 'red.500' : 
                             ensureNumber(data?.humidity || 0) < 50 ? 'blue.500' : 'green.500'}
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                          whiteSpace="nowrap"
+                          minW="0"
                         >
                           {ensureNumber(data?.humidity || 0).toFixed(1)}%
                         </Text>
-                        <Text fontSize={{ base: "xl", md: "2xl" }} color="gray.400">|</Text>
+                        <Text fontSize={{ base: "md", md: "2xl" }} color="gray.400" mx={{ base: 0.5, md: 1 }}>|</Text>
                         <Text 
-                          fontSize={{ base: "2xl", md: "3xl" }} 
+                          fontSize={{ base: "lg", md: "3xl" }} 
                           fontWeight="bold"
                           color={ensureNumber(data?.soil_humidity || 0) > 65 ? 'red.500' : 
                             ensureNumber(data?.soil_humidity || 0) < 50 ? 'blue.500' : 'green.500'}
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                          whiteSpace="nowrap"
+                          minW="0"
                         >
                           {ensureNumber(data?.soil_humidity || 0).toFixed(1)}%
                         </Text>
@@ -913,6 +939,8 @@ const Dashboard: React.FC = () => {
               <Box
                 _hover={{ transform: 'translateY(-5px)', boxShadow: 'lg' }}
                 _active={{ transform: 'scale(0.98)' }}
+                width="100%"
+                gridColumn={{ base: "1", sm: "1", md: "3" }}
               >
                 <Box
                   bg="white"
@@ -968,6 +996,8 @@ const Dashboard: React.FC = () => {
               <Box
                 _hover={{ transform: 'translateY(-5px)', boxShadow: 'lg' }}
                 _active={{ transform: 'scale(0.98)' }}
+                width="100%"
+                gridColumn={{ base: "1", sm: "2", md: "4" }}
               >
                 <Box
                   bg="white"
