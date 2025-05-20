@@ -50,13 +50,8 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
   
   // Try to verify token
   try {
-    // For debugging: show payload without verification
-    const decodedWithoutVerify = jwt.decode(token);
-    
-    // Verify token
     const decoded = jwt.verify(token, JWT_SECRET);
     
-    // Set user in request
     req.user = decoded as UserPayload;
     
     // Continue to next middleware/route handler

@@ -26,7 +26,7 @@ class SensorModel {
     try {
       const connection = await pool.getConnection();
       
-      // Veritabanındaki tüm kayıtları kontrol et
+      // Check all records in the database
       const [allRecords] = await connection.query<RowDataPacket[]>(
         `SELECT 
           id,
@@ -37,13 +37,8 @@ class SensorModel {
         LIMIT 20`
       );
       
-      console.log('Veritabanındaki son 20 kayıt:', allRecords.map(record => ({
-        id: record.id,
-        timestamp: record.timestamp,
-        temperature: record.temperature
-      })));
 
-      // Şimdi tüm kayıtları al
+      // Now get all records
       const [records] = await connection.query<RowDataPacket[]>(
         `SELECT 
           id,
@@ -54,16 +49,11 @@ class SensorModel {
           light_lux,
           timestamp
         FROM sensor_data 
-        ORDER BY timestamp DESC`  // En yeni kayıtlar önce
+        ORDER BY timestamp DESC`  // Newest records first
       );
 
-      console.log('Sorgu sonuçları:', {
-        toplamKayit: records.length,
-        enYeniKayit: records[0]?.timestamp,
-        enEskiKayit: records[records.length - 1]?.timestamp
-      });
 
-      // Verileri dönüştür ve sırala
+      // Convert and sort data
       const data: SensorData[] = records
         .map((row: any) => ({
           id: row.id,
@@ -74,12 +64,12 @@ class SensorModel {
           light_lux: row.light_lux,
           timestamp: row.timestamp
         }))
-        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()); // Eski kayıtlar önce
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()); // Oldest records first
 
       connection.release();
       return data;
     } catch (error) {
-      console.error('Veri çekerken hata:', error);
+      console.error('Error while fetching data:', error);
       throw error;
     }
   }
@@ -90,22 +80,19 @@ class SensorModel {
       return data;
     }
     
-
     const step = Math.max(1, Math.floor(data.length / targetPoints));
-    
-
     const sampledData: SensorData[] = [];
     
-
+    // Ensure the first point is always included
     sampledData.push(data[0]);
     
-
+    // Add points at calculated step intervals
     for (let i = step; i < data.length - step; i += step) {
       sampledData.push(data[i]);
     }
     
-
-    if (sampledData[sampledData.length - 1] !== data[data.length - 1]) {
+    // Ensure the last point is always included if it wasn't already the last one added by the loop
+    if (data.length > 1 && sampledData[sampledData.length - 1] !== data[data.length - 1]) {
       sampledData.push(data[data.length - 1]);
     }
     
@@ -115,9 +102,8 @@ class SensorModel {
 
   async saveSensorData(data: SensorData): Promise<number> {
     try {
-      console.log(`[${new Date().toISOString()}] Saving data to database:`, data);
       
-      // Minimum değerleri kontrol et ve düzelt
+      // Check and correct minimum values
       const validatedData = {
         ...data,
         light_lux: Math.max(data.light_lux || 500, 500), // Minimum 500 lux
@@ -139,7 +125,6 @@ class SensorModel {
         ]
       );
       
-      console.log(`[${new Date().toISOString()}] Database result:`, result);
       return (result as any).insertId;
     } catch (error) {
       console.error(`[${new Date().toISOString()}] Error saving data to database:`, error);
@@ -155,7 +140,7 @@ class SensorModel {
       return 0;
     }
     
-    // Verileri doğrula ve minimum değerleri ayarla
+    // Validate data and set minimum values
     const validatedDataList = dataList.map(data => ({
       ...data,
       light_lux: Math.max(data.light_lux || 500, 500), // Minimum 500 lux

@@ -30,16 +30,14 @@ const generateMockHistoricalData = (hours = 24): SensorData[] => {
   
   // Create multiple data points per hour
   // This ensures we have multiple points when "Last 1 Hour" is selected
-  const dataPointsPerHour = 5; // 5 data points per hour
+  const dataPointsPerHour = 5;
   const totalPoints = hours * dataPointsPerHour;
   
   for (let i = 0; i < totalPoints; i++) {
     const timestamp = new Date(now);
-    // Calculate more precise time intervals (minutes)
     const minutesAgo = (totalPoints - 1 - i) * (60 / dataPointsPerHour);
     timestamp.setMinutes(now.getMinutes() - minutesAgo);
     
-    // Denmark timezone conversion
     const denmarkTimestamp = formatInTimeZone(
       timestamp, 
       DENMARK_TIMEZONE, 
@@ -55,7 +53,7 @@ const generateMockHistoricalData = (hours = 24): SensorData[] => {
       air_humidity: airHumidity,
       soil_humidity: airHumidity * 0.9 + (Math.random() * 10 - 5),
       co2_level: 400 + (temp - 20) * 15 + (Math.random() * 50 - 25),
-      light_lux: 2000 + Math.random() * 8000, // Gündüz için rastgele ışık seviyesi
+      light_lux: 2000 + Math.random() * 8000, // Random light level for daytime
       timestamp: denmarkTimestamp
     });
   }
@@ -95,16 +93,16 @@ class SensorController {
         sensorData = await sensorModel.getCurrentData();
         
         if (!sensorData) {
-          return res.status(404).json({ message: 'Veritabanında hiç veri bulunamadı' });
+          return res.status(404).json({ message: 'No data found in the database' });
         }
         
         res.status(200).json(sensorData);
       } catch (dbError) {
-        console.error('Veritabanı hatası:', dbError);
-        res.status(500).json({ message: 'Veritabanı bağlantısında hata oluştu' });
+        console.error('Database error:', dbError);
+        res.status(500).json({ message: 'Error in database connection' });
       }
     } catch (error) {
-      res.status(500).json({ message: 'Sensor verisi alınırken sunucu hatası oluştu' });
+      res.status(500).json({ message: 'Server error while fetching sensor data' });
     }
   }
 
@@ -114,17 +112,10 @@ class SensorController {
       const range = (req.query.range as string) || '24h';
       const limit = parseInt(req.query.limit as string) || 100;
       
-      // Get data from model
       const sensorData = await sensorModel.getHistoricalData(24, limit);
       
       if (sensorData && sensorData.length > 0) {
-        console.log('Controller - Veri durumu:', {
-          toplamKayit: sensorData.length,
-          enYeniKayit: sensorData[sensorData.length - 1]?.timestamp,
-          enEskiKayit: sensorData[0]?.timestamp
-        });
-
-        // Eğer veri sayısı limiti aşıyorsa örnekleme yap
+        // If data count exceeds limit, perform sampling
         let finalData = sensorData;
         if (sensorData.length > limit) {
           finalData = downsampleData(sensorData, limit);
@@ -136,11 +127,11 @@ class SensorController {
           count: finalData.length
         });
       } else {
-        res.status(404).json({ message: 'Bu sensör için veri bulunamadı' });
+        res.status(404).json({ message: 'No data found for this sensor' });
       }
     } catch (error) {
-      console.error('Geçmiş veri çekerken hata:', error);
-      res.status(500).json({ message: 'Geçmiş veri çekerken sunucu hatası' });
+      console.error('Error while fetching historical data:', error);
+      res.status(500).json({ message: 'Server error while fetching historical data' });
     }
   }
 
@@ -171,14 +162,12 @@ class SensorController {
 
   async generateDemoData(req: Request, res: Response) {
     try {
-      // Clear existing data first
       await sensorModel.clearAllData();
 
       const daysToGenerate = 30;
       const intervalSeconds = 30;
       const totalRecords = (daysToGenerate * 24 * 60 * 60) / intervalSeconds;
       
-      // Start from 30 days ago
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - daysToGenerate);
       startDate.setFullYear(2023); // Force year to be 2023
@@ -197,7 +186,6 @@ class SensorController {
       
       // Generate data points
       for (let i = 0; i < totalRecords; i++) {
-        // Calculate timestamp for this record
         const timestamp = new Date(startDate.getTime() + (i * intervalSeconds * 1000));
         
         // Add some variability to temperature and humidity

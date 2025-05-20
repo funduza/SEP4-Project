@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { DeviceModel, Device, DeviceLog } from '../models/deviceModel';
 import { formatInTimeZone } from 'date-fns-tz';
 
-// Denmark timezone
 const DENMARK_TIMEZONE = 'Europe/Copenhagen';
 
 export const deviceController = {
@@ -50,7 +49,6 @@ export const deviceController = {
         return;
       }
       
-      // Get user information from auth middleware if available
       let userId: number | null = null;
       let username: string | null = null;
       
@@ -59,7 +57,6 @@ export const deviceController = {
         username = req.user.username;
       }
       
-      // Get current device to track change
       const currentDevice = await DeviceModel.getDeviceById(deviceId);
       
       if (!currentDevice) {
@@ -67,13 +64,11 @@ export const deviceController = {
         return;
       }
       
-      // Check if device is an actuator
       if (currentDevice.type !== 'actuator') {
         res.status(400).json({ message: 'Only actuator devices can be toggled' });
         return;
       }
       
-      // Update the device status
       const updatedDevice = await DeviceModel.updateDeviceStatus(
         deviceId, 
         status,
@@ -112,7 +107,6 @@ export const deviceController = {
         return;
       }
       
-      // Get user information from auth middleware if available
       let userId: number | null = null;
       let username: string | null = null;
       
@@ -121,7 +115,6 @@ export const deviceController = {
         username = req.user.username;
       }
       
-      // Get current device to track change
       const currentDevice = await DeviceModel.getDeviceById(deviceId);
       
       if (!currentDevice) {
@@ -129,7 +122,6 @@ export const deviceController = {
         return;
       }
       
-      // Update the device value
       const updatedDevice = await DeviceModel.updateSensorValue(
         deviceId, 
         value,
@@ -154,20 +146,15 @@ export const deviceController = {
    */
   getAllDeviceLogs: async (req: Request, res: Response): Promise<void> => {
     try {
-      // Get pagination parameters if any
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
       
-      // Get optional device filter
       const deviceId = req.query.deviceId ? parseInt(req.query.deviceId as string) : null;
       const actionType = req.query.actionType as string || null;
       
-      // Get logs
       const logs = await DeviceModel.getAllDeviceLogs(deviceId, actionType, limit, offset);
       
-      // Format the response
       const formattedLogs = logs.map((log: DeviceLog) => {
-        // Format timestamp for frontend
         const logTime = new Date(log.log_time);
         
         // Calculate time difference for displaying "X time ago"
@@ -238,26 +225,20 @@ export const deviceController = {
         return;
       }
       
-      // Check if device exists
       const device = await DeviceModel.getDeviceById(deviceId);
       if (!device) {
         res.status(404).json({ message: 'Device not found' });
         return;
       }
       
-      // Get pagination parameters if any
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
       
-      // Get logs
       const logs = await DeviceModel.getDeviceLogs(deviceId, limit, offset);
       
-      // Format the response
       const formattedLogs = logs.map(log => {
-        // Format timestamp for frontend
         const logTime = new Date(log.log_time);
         
-        // Calculate time difference for displaying "X time ago"
         const now = new Date();
         const diffMinutes = Math.floor((now.getTime() - logTime.getTime()) / (1000 * 60));
         
@@ -284,7 +265,6 @@ export const deviceController = {
           }
         }
         
-        // Format action type for better readability
         let actionDisplay = '';
         if (log.action_type === 'value_change') {
           actionDisplay = 'Value updated';
