@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import './App.css';
-import Dashboard from './components/pages/Dashboard';
+import Dashboard from './components/pages/dashboard/Dashboard';
 import Home from './components/pages/Home';
 import Header from './components/includes/Header';
 import Login from './components/pages/Login';

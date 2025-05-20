@@ -16,13 +16,13 @@ import {
   Skeleton,
   SkeletonText,
 } from '@chakra-ui/react';
-import { ChakraLineChart } from '../ui/chakra-chart';
+import { ChakraLineChart } from '../../ui/chakra-chart';
 // Import utility functions
 import { 
   ensureNumber, 
   formatTimeAgo, 
   formatDateTime
-} from '../../utils';
+} from '../../../utils';
 
 // Custom icons implemented using SVG instead of relying on external packages
 const CustomIcon = (props: any) => {
