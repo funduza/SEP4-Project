@@ -6,6 +6,7 @@ import {
 import { Tabs } from '@chakra-ui/react';
 import { Alert } from '@chakra-ui/react';
 import { ViewHorizontalIcon, ViewNoneIcon } from '@radix-ui/react-icons';
+import { useNavigate } from 'react-router-dom';
 
 // Custom hook for tracking window resize
 function useWindowSize() {
@@ -144,7 +145,41 @@ export default function Settings() {
   const getTipsFontSize = () => windowSize.width < 768 ? "lg" : "2xl";
   
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+  const navigate = useNavigate();
   
+  // Token yenileme fonksiyonu
+  const refreshToken = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      const response = await fetch(`${API_URL}/api/auth/verify`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Token verification failed');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        // Token hala geçerli, kullanıcı bilgilerini güncelle
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
+    }
+  };
+
   // Fetch user profile data
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -157,6 +192,18 @@ export default function Settings() {
         if (!token) {
           setError('Not authenticated');
           setLoading(false);
+          navigate('/login');
+          return;
+        }
+
+        // Önce token'ı yenilemeyi dene
+        const isTokenValid = await refreshToken();
+        if (!isTokenValid) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setError('Session expired. Please login again.');
+          setLoading(false);
+          navigate('/login');
           return;
         }
         
@@ -167,6 +214,15 @@ export default function Settings() {
             'Content-Type': 'application/json'
           }
         });
+        
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setError('Session expired. Please login again.');
+          setLoading(false);
+          navigate('/login');
+          return;
+        }
         
         if (!response.ok) {
           const errorMessage = `HTTP error ${response.status}: ${response.statusText}`;
@@ -190,7 +246,7 @@ export default function Settings() {
     };
     
     fetchUserProfile();
-  }, [API_URL]);
+  }, [API_URL, navigate]);
   
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -200,8 +256,20 @@ export default function Settings() {
       const token = localStorage.getItem('token');
       if (!token) {
         setConfirmation({ tab: activeTab, type: 'error', message: 'Not authenticated' });
+        navigate('/login');
         return;
       }
+
+      // Önce token'ı yenilemeyi dene
+      const isTokenValid = await refreshToken();
+      if (!isTokenValid) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setConfirmation({ tab: activeTab, type: 'error', message: 'Session expired. Please login again.' });
+        navigate('/login');
+        return;
+      }
+
       const requestBody: any = {
         firstName,
         lastName
