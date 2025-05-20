@@ -19,7 +19,34 @@ import {
   HStack,
   Badge
 } from '@chakra-ui/react';
-import { filterValidChartData, formatChartTick } from '../../utils';
+
+// Utility functions moved from utils
+const filterValidChartData = <T extends Record<string, any>>(data: T[], xAxisKey: string): T[] => {
+  return data.filter(item => {
+    if (!item[xAxisKey]) return false;
+    try {
+      const date = new Date(item[xAxisKey]);
+      return !isNaN(date.getTime());
+    } catch (e) {
+      return false;
+    }
+  });
+};
+
+const formatChartTick = (value: string): string => {
+  try {
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return value;
+    
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  } catch (e) {
+    return value;
+  }
+};
 
 interface ReferencePoint {
   y: number;
@@ -28,8 +55,12 @@ interface ReferencePoint {
   strokeDasharray?: string;
 }
 
+interface ChartDataItem extends Record<string, any> {
+  timestamp: string;
+}
+
 interface ChakraLineChartProps {
-  data: any[];
+  data: ChartDataItem[];
   xAxisKey: string;
   yAxisKeys: { key: string; color: string; name: string }[];
   height?: number;
@@ -39,7 +70,7 @@ interface ChakraLineChartProps {
   referencePoints?: ReferencePoint[];
 }
 
-// Özel Referans Çizgileri Açıklaması bileşeni
+// Custom Reference Lines Legend component
 const ReferencePointsLegend: React.FC<{ referencePoints: ReferencePoint[] }> = ({ referencePoints }) => {
   if (!referencePoints || referencePoints.length === 0) return null;
   
@@ -88,7 +119,7 @@ export const ChakraLineChart: React.FC<ChakraLineChartProps> = ({
 }) => {
   const validData = useMemo(() => {
     // Check if we actually have valid data in a deeper way
-    const filteredData = filterValidChartData(data, xAxisKey);
+    const filteredData = filterValidChartData<ChartDataItem>(data, xAxisKey);
     
     // Verify that at least one data point has values for each of the yAxisKeys
     return filteredData.filter(item => {
@@ -212,7 +243,7 @@ export const ChakraLineChart: React.FC<ChakraLineChartProps> = ({
               paddingTop: '10px'
             }}
           />
-          {/* Referans çizgileri - etiketsiz */}
+          {/* Reference lines - without labels */}
           {referencePoints && referencePoints.map((point, index) => (
             <ReferenceLine 
               key={`ref-line-${index}`}
