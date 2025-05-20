@@ -147,7 +147,7 @@ export default function Settings() {
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
   const navigate = useNavigate();
   
-  // Token yenileme fonksiyonu
+  // Token refresh function
   const refreshToken = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -169,7 +169,7 @@ export default function Settings() {
 
       const data = await response.json();
       if (data.success) {
-        // Token hala geçerli, kullanıcı bilgilerini güncelle
+        // Token is still valid, update user info
         localStorage.setItem('user', JSON.stringify(data.user));
         return true;
       }
@@ -196,7 +196,7 @@ export default function Settings() {
           return;
         }
 
-        // Önce token'ı yenilemeyi dene
+        // Try to refresh token first
         const isTokenValid = await refreshToken();
         if (!isTokenValid) {
           localStorage.removeItem('token');
@@ -260,7 +260,7 @@ export default function Settings() {
         return;
       }
 
-      // Önce token'ı yenilemeyi dene
+      // Try to refresh token first
       const isTokenValid = await refreshToken();
       if (!isTokenValid) {
         localStorage.removeItem('token');
