@@ -1,0 +1,19 @@
+
+
+services:
+  greenhouse-frontend:
+    build: ./greenhouse-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - greenhouse-backend
+
+  greenhouse-backend:
+    build: ./greenhouse-backend
+    ports:
+      - "5000:3000"
+    environment:
+      - MYSQL_HOST= 77.37.35.74
+      - MYSQL_USER= u127812886_greenhouse
+      - MYSQL_PASSWORD= Viagreenhouse123
+      - MYSQL_DATABASE= u127812886_greenhouse
