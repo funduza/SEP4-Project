@@ -17,6 +17,7 @@ import {
   SkeletonText,
 } from '@chakra-ui/react';
 import { ChakraLineChart } from '../../ui/chakra-chart';
+import SensorCard from '../../ui/cards/SensorCard';
 // Import utility functions
 import { 
   ensureNumber, 
@@ -657,287 +658,58 @@ const Dashboard: React.FC = () => {
             templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "1fr 1.5fr 1fr 1fr" }}
           >
             {/* Temperature Card */}
-            {loading ? (
-              <CardSkeleton />
-            ) : (
-              <Box
-                _hover={{ transform: 'translateY(-5px)', boxShadow: 'lg' }}
-                _active={{ transform: 'scale(0.98)' }}
-                width="100%"
-                gridColumn={{ base: "1", sm: "1", md: "1" }}
-              >
-                <Box
-                  bg="white"
-                  p={{ base: 4, md: 6 }}
-                  borderRadius="xl"
-                  boxShadow="md"
-                  borderLeftWidth="4px"
-                  borderLeftColor={ensureNumber(data?.temperature || 0) > 27 ? 'red.400' : 
-                    ensureNumber(data?.temperature || 0) < 20 ? 'blue.400' : 'green.400'}
-                  height="100%"
-                  width="100%"
-                >
-                  <Flex 
-                    align="center" 
-                    mb={4} 
-                    direction="row"
-                    textAlign="left"
-                    gap={4}
-                    width="100%"
-                  >
-                    <Box
-                      bg={ensureNumber(data?.temperature || 0) > 27 ? 'red.100' : 
-                        ensureNumber(data?.temperature || 0) < 20 ? 'blue.100' : 'green.100'}
-                      p={{ base: 4, md: 4 }}
-                      borderRadius="lg"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      flexShrink={0}
-                      width={{ base: "60px", md: "80px" }}
-                      height={{ base: "60px", md: "80px" }}
-                    >
-                      {icons.thermometer({ 
-                        boxSize: { base: 8, md: 10 },
-                        color: ensureNumber(data?.temperature || 0) > 27 ? 'red.500' : 
-                          ensureNumber(data?.temperature || 0) < 20 ? 'blue.500' : 'green.500'
-                      })}
-                    </Box>
-                    <Box flex="1">
-                      <Text fontWeight="bold" fontSize={{ base: "md", md: "lg" }} color="gray.600">Temperature</Text>
-                      <Text 
-                        fontSize={{ base: "2xl", md: "3xl" }} 
-                        fontWeight="bold"
-                        textAlign="left"
-                        color={ensureNumber(data?.temperature || 0) > 27 ? 'red.500' : 
-                          ensureNumber(data?.temperature || 0) < 20 ? 'blue.500' : 'green.500'}
-                      >
-                        {ensureNumber(data?.temperature || 0).toFixed(1)}°C
-                      </Text>
-                    </Box>
-                  </Flex>
-                  
-                  <Text fontSize={{ base: "xs", md: "sm" }} color="gray.500" mt={2} textAlign="left">
-                    Ideal range: <Badge colorScheme="green">18-30°C</Badge>
-                  </Text>
-                </Box>
-              </Box>
-            )}
+            <SensorCard
+              title="Temperature"
+              value={data?.temperature || 0}
+              unit="°C"
+              icon="thermometer"
+              loading={loading}
+              idealRange={{ min: 18, max: 30 }}
+              warningThreshold={25}
+              dangerThreshold={28}
+              gridColumn={{ base: "1", sm: "1", md: "1" }}
+            />
         
             {/* Humidity Card */}
-            {loading ? (
-              <CardSkeleton />
-            ) : (
-              <Box
-                _hover={{ transform: 'translateY(-5px)', boxShadow: 'lg' }}
-                _active={{ transform: 'scale(0.98)' }}
-                width="100%"
-                gridColumn={{ base: "1", sm: "2", md: "2" }}
-              >
-                <Box
-                  bg="white"
-                  p={{ base: 4, md: 6 }}
-                  borderRadius="xl"
-                  boxShadow="md"
-                  borderLeftWidth="4px"
-                  borderLeftColor={ensureNumber(data?.humidity || 0) > 65 ? 'red.400' : 
-                    ensureNumber(data?.humidity || 0) < 50 ? 'blue.400' : 'green.400'}
-                  height="100%"
-                  width="100%"
-                >
-                  <Flex 
-                    align="center"
-                    mb={4}
-                    direction="row"
-                    textAlign="left"
-                    gap={4}
-                    width="100%"
-                  >
-                    <Box
-                      bg={ensureNumber(data?.humidity || 0) > 65 ? 'red.100' : 
-                        ensureNumber(data?.humidity || 0) < 50 ? 'blue.100' : 'green.100'}
-                      p={{ base: 4, md: 4 }}
-                      borderRadius="lg"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      flexShrink={0}
-                      width={{ base: "60px", md: "80px" }}
-                      height={{ base: "60px", md: "80px" }}
-                    >
-                      {icons.droplet({ 
-                        boxSize: { base: 8, md: 10 },
-                        color: ensureNumber(data?.humidity || 0) > 65 ? 'red.500' : 
-                          ensureNumber(data?.humidity || 0) < 50 ? 'blue.500' : 'green.500'
-                      })}
-                    </Box>
-                    <Box flex="1" minW="0">
-                      <Text 
-                        fontWeight="bold" 
-                        fontSize={{ base: "xs", md: "lg" }} 
-                        color="gray.600"
-                        overflow="hidden"
-                        textOverflow="ellipsis"
-                        whiteSpace="nowrap"
-                      >
-                        Air + Soil Humidity
-                      </Text>
-                      <Flex 
-                        align="center" 
-                        gap={{ base: 0.5, md: 2 }} 
-                        flexWrap="nowrap"
-                        minW="0"
-                        overflow="hidden"
-                      >
-                        <Text 
-                          fontSize={{ base: "lg", md: "3xl" }} 
-                          fontWeight="bold"
-                          color={ensureNumber(data?.humidity || 0) > 65 ? 'red.500' : 
-                            ensureNumber(data?.humidity || 0) < 50 ? 'blue.500' : 'green.500'}
-                          overflow="hidden"
-                          textOverflow="ellipsis"
-                          whiteSpace="nowrap"
-                          minW="0"
-                        >
-                          {ensureNumber(data?.humidity || 0).toFixed(1)}%
-                        </Text>
-                        <Text fontSize={{ base: "md", md: "2xl" }} color="gray.400" mx={{ base: 0.5, md: 1 }}>|</Text>
-                        <Text 
-                          fontSize={{ base: "lg", md: "3xl" }} 
-                          fontWeight="bold"
-                          color={ensureNumber(data?.soil_humidity || 0) > 65 ? 'red.500' : 
-                            ensureNumber(data?.soil_humidity || 0) < 50 ? 'blue.500' : 'green.500'}
-                          overflow="hidden"
-                          textOverflow="ellipsis"
-                          whiteSpace="nowrap"
-                          minW="0"
-                        >
-                          {ensureNumber(data?.soil_humidity || 0).toFixed(1)}%
-                        </Text>
-                      </Flex>
-                    </Box>
-                  </Flex>
-                  
-                  <Text fontSize={{ base: "xs", md: "sm" }} color="gray.500" mt={2} textAlign="left">
-                    Ideal range: <Badge colorScheme="green">45-70%</Badge>
-                  </Text>
-                </Box>
-              </Box>
-            )}
+            <SensorCard
+              title="Air + Soil Humidity"
+              value={data?.humidity || 0}
+              unit="%"
+              icon="droplet"
+              loading={loading}
+              idealRange={{ min: 45, max: 70 }}
+              warningThreshold={65}
+              dangerThreshold={70}
+              secondaryValue={data?.soil_humidity || 0}
+              secondaryUnit="%"
+              gridColumn={{ base: "1", sm: "2", md: "2" }}
+            />
 
             {/* CO2 Level Card */}
-            {loading ? (
-              <CardSkeleton />
-            ) : (
-              <Box
-                _hover={{ transform: 'translateY(-5px)', boxShadow: 'lg' }}
-                _active={{ transform: 'scale(0.98)' }}
-                width="100%"
-                gridColumn={{ base: "1", sm: "1", md: "3" }}
-              >
-                <Box
-                  bg="white"
-                  p={6}
-                  borderRadius="xl"
-                  boxShadow="md"
-                  borderLeftWidth="4px"
-                  borderLeftColor={ensureNumber(data?.co2_level || 0) > 1000 ? 'red.400' : 
-                    ensureNumber(data?.co2_level || 0) < 400 ? 'blue.400' : 'green.400'}
-                  height="100%"
-                >
-                  <Flex align="center" mb={4}>
-                    <Box
-                      bg={ensureNumber(data?.co2_level || 0) > 1000 ? 'red.100' : 
-                        ensureNumber(data?.co2_level || 0) < 400 ? 'blue.100' : 'green.100'}
-                      p={4}
-                      borderRadius="lg"
-                      mr={4}
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      {icons.co2({ 
-                        boxSize: 10,
-                        color: ensureNumber(data?.co2_level || 0) > 1000 ? 'red.500' : 
-                          ensureNumber(data?.co2_level || 0) < 400 ? 'blue.500' : 'green.500'
-                      })}
-                    </Box>
-                    <Box>
-                      <Text fontWeight="bold" fontSize="lg" color="gray.600" textAlign="left">CO₂ Level</Text>
-                      <Text 
-                        fontSize="3xl" 
-                        fontWeight="bold"
-                        color={ensureNumber(data?.co2_level || 0) > 1000 ? 'red.500' : 
-                          ensureNumber(data?.co2_level || 0) < 400 ? 'blue.500' : 'green.500'}
-                      >
-                        {ensureNumber(data?.co2_level || 0).toFixed(0)} ppm
-                      </Text>
-                    </Box>
-                  </Flex>
-                  
-                  <Text fontSize="sm" color="gray.500" mt={2} textAlign="left">
-                    Ideal range: <Badge colorScheme="green">400-1000 ppm</Badge>
-                  </Text>
-                </Box>
-              </Box>
-            )}
+            <SensorCard
+              title="CO₂ Level"
+              value={data?.co2_level || 0}
+              unit=" ppm"
+              icon="co2"
+              loading={loading}
+              idealRange={{ min: 400, max: 1000 }}
+              warningThreshold={900}
+              dangerThreshold={1000}
+              gridColumn={{ base: "1", sm: "1", md: "3" }}
+            />
         
             {/* Light Level Card */}
-            {loading ? (
-              <CardSkeleton />
-            ) : (
-              <Box
-                _hover={{ transform: 'translateY(-5px)', boxShadow: 'lg' }}
-                _active={{ transform: 'scale(0.98)' }}
-                width="100%"
-                gridColumn={{ base: "1", sm: "2", md: "4" }}
-              >
-                <Box
-                  bg="white"
-                  p={6}
-                  borderRadius="xl"
-                  boxShadow="md"
-                  borderLeftWidth="4px"
-                  borderLeftColor={ensureNumber(data?.light_lux || 0) > 10000 ? 'red.400' : 
-                    ensureNumber(data?.light_lux || 0) < 2000 ? 'red.400' : 'green.400'}
-                  height="100%"
-                >
-                  <Flex align="center" mb={4}>
-                    <Box
-                      bg={ensureNumber(data?.light_lux || 0) > 10000 ? 'red.100' : 
-                        ensureNumber(data?.light_lux || 0) < 2000 ? 'red.100' : 'green.100'}
-                      p={4}
-                      borderRadius="lg"
-                      mr={4}
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      {icons.light({ 
-                        boxSize: 10,
-                        color: ensureNumber(data?.light_lux || 0) > 10000 ? 'red.500' : 
-                          ensureNumber(data?.light_lux || 0) < 2000 ? 'red.500' : 'green.500'
-                      })}
-                    </Box>
-                    <Box>
-                      <Text fontWeight="bold" fontSize="lg" color="gray.600">Light Level</Text>
-                      <Text 
-                        fontSize="3xl" 
-                        fontWeight="bold"
-                        color={ensureNumber(data?.light_lux || 0) > 10000 ? 'red.500' : 
-                          ensureNumber(data?.light_lux || 0) < 2000 ? 'red.500' : 'green.500'}
-                      >
-                        {ensureNumber(data?.light_lux || 0).toFixed(0)} lux
-                      </Text>
-                    </Box>
-                  </Flex>
-                  
-                  <Text fontSize="sm" color="gray.500" mt={2} textAlign="left">
-                    Ideal range: <Badge colorScheme="green">2000-10000 lux</Badge>
-                  </Text>
-                </Box>
-              </Box>
-            )}
+            <SensorCard
+              title="Light Level"
+              value={data?.light_lux || 0}
+              unit=" lux"
+              icon="light"
+              loading={loading}
+              idealRange={{ min: 2000, max: 10000 }}
+              warningThreshold={8000}
+              dangerThreshold={10000}
+              gridColumn={{ base: "1", sm: "2", md: "4" }}
+            />
           </SimpleGrid>
       
           {!loading && (

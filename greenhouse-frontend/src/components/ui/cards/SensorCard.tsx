@@ -17,7 +17,11 @@ interface SensorCardProps {
   dangerThreshold?: number;
   secondaryValue?: number | string;
   secondaryUnit?: string;
-  gridColumn?: string;
+  gridColumn?: string | {
+    base: string;
+    sm: string;
+    md: string;
+  };
 }
 
 const SensorCard: React.FC<SensorCardProps> = ({
