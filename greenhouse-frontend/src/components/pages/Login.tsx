@@ -41,7 +41,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   // Development ortamında localhost, production ortamında Render URL'i kullanılacak
   const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000'
-    : 'https://greenhouse-backend.onrender.com';
+    : 'https://sep4-backend.onrender.com';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
