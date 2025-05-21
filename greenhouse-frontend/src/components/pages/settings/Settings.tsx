@@ -144,7 +144,11 @@ export default function Settings() {
   const getHeaderSize = () => windowSize.width < 768 ? "xl" : "2xl";
   const getTipsFontSize = () => windowSize.width < 768 ? "lg" : "2xl";
   
-  const API_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+  // Development ortamında localhost, production ortamında Render URL'i kullanılacak
+  const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000'
+    : 'https://greenhouse-backend.onrender.com';
+  
   const navigate = useNavigate();
   
   // Token refresh function
