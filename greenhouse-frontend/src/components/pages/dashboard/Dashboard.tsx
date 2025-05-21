@@ -79,7 +79,7 @@ const Dashboard: React.FC = () => {
   const refreshInterval = 10000; 
   const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000'
-    : 'https://greenhouse-backend.onrender.com';
+    : 'https://sep4-backend.onrender.com';
 
   // Auto refresh interval ref
   const autoRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);

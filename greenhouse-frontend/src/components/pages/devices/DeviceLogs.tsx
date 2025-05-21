@@ -85,7 +85,7 @@ const DeviceLogs: React.FC<DeviceLogsProps> = ({
   // Development ortamında localhost, production ortamında Render URL'i kullanılacak
   const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000'
-    : 'https://greenhouse-backend.onrender.com';
+    : 'https://sep4-backend.onrender.com';
 
   // Fetch device logs
   const fetchLogs = async () => {

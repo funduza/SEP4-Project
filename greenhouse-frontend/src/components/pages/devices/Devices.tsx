@@ -121,7 +121,9 @@ interface ActuatorDevice extends BaseDevice {
 type Device = SensorDevice | ActuatorDevice;
 
 // Since it's defined as '/api/devices' in the backend, we only specify the server address here
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3000'
+  : 'https://sep4-backend.onrender.com';
 
 // Status indicator component
 const StatusDot = ({ isActive }: { isActive: boolean }) => {
