@@ -222,11 +222,6 @@ export default function Settings() {
         return;
       }
 
-      // Token validation is implicitly handled by ProtectedRoute in App.tsx.
-      // If the user reaches this point, the token should be valid or recently verified.
-      // However, a quick check or relying on App.tsx to manage global auth state is best.
-      // For now, we proceed assuming App.tsx handles critical auth failures.
-
       const requestBody: any = {
         firstName,
         lastName
