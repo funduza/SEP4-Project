@@ -151,39 +151,6 @@ export default function Settings() {
   
   const navigate = useNavigate();
   
-  // Token refresh function
-  const refreshToken = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found');
-      }
-
-      const response = await fetch(`${API_URL}/api/auth/verify`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Token verification failed');
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        // Token is still valid, update user info
-        localStorage.setItem('user', JSON.stringify(data.user));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      return false;
-    }
-  };
-
   // Fetch user profile data
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -195,17 +162,6 @@ export default function Settings() {
         
         if (!token) {
           setError('Not authenticated');
-          setLoading(false);
-          navigate('/login');
-          return;
-        }
-
-        // Try to refresh token first
-        const isTokenValid = await refreshToken();
-        if (!isTokenValid) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setError('Session expired. Please login again.');
           setLoading(false);
           navigate('/login');
           return;
@@ -256,20 +212,12 @@ export default function Settings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setConfirmation(null);
+    setError(null); // Clear previous errors
+
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        setConfirmation({ tab: activeTab, type: 'error', message: 'Not authenticated' });
-        navigate('/login');
-        return;
-      }
-
-      // Try to refresh token first
-      const isTokenValid = await refreshToken();
-      if (!isTokenValid) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setConfirmation({ tab: activeTab, type: 'error', message: 'Session expired. Please login again.' });
+        setConfirmation({ tab: activeTab, type: 'error', message: 'Not authenticated. Please login again.' });
         navigate('/login');
         return;
       }
