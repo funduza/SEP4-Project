@@ -1,15 +1,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { PredictionData, Ranges, Insight, ChartDataItem } from '../components/pages/predictions/types'; // Adjusted path
+import { PredictionData, Ranges, Insight, ChartDataItem } from '../components/pages/predictions/types';
 
-// Development ortamında localhost, production ortamında Render URL'i kullanılacak
 const API_URL = window.location.hostname === 'localhost' 
   ? 'http://localhost:3000'
   : 'https://sep4-backend.onrender.com';
 
-// Re-define or import constants if they are not passed as props (e.g., ranges for insights)
-// For simplicity, we will redefine ranges here if it's only used for insights generation within the hook
-// Or, the hook could accept `ranges` as an argument if it's dynamic or shared elsewhere for rendering.
-// Assuming `ranges` constant is primarily for insight generation logic and color coding.
 const rangesConstant: Ranges = {
   temp: { min: 15, max: 35, ideal: { min: 22, max: 28 } },
   air_humidity: { min: 35, max: 75, ideal: { min: 50, max: 65 } },
@@ -21,7 +16,7 @@ const rangesConstant: Ranges = {
 export const usePredictions = (initialSelectedRange: string = '24h', initialSelectedSensorType: string = 'temp') => {
   const [predictionData, setPredictionData] = useState<PredictionData[]>([]);
   const [selectedRange, setSelectedRange] = useState<string>(initialSelectedRange);
-  const [selectedSensorType, setSelectedSensorType] = useState<string>(initialSelectedSensorType); // Added this state
+  const [selectedSensorType, setSelectedSensorType] = useState<string>(initialSelectedSensorType); 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -205,7 +200,7 @@ export const usePredictions = (initialSelectedRange: string = '24h', initialSele
     if (!predictionData.length) return null;
 
     const nowMs = new Date().getTime();
-    // Reverted logic: Find the soonest future prediction
+    // Find the soonest future prediction
     const futurePredictions = predictionData
         .map(p => ({ ...p, ms: parseDate(p.timestamp).getTime() })) // Ensure timestamp is parsed to ms for comparison
         .filter(p => p.ms >= nowMs) // Filter for predictions that are now or in the future
