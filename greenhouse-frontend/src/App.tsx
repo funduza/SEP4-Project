@@ -5,7 +5,7 @@ import './App.css';
 import Dashboard from './components/pages/dashboard/Dashboard';
 import Home from './components/pages/home/Home';
 import Header from './components/includes/Header';
-import Login from './components/pages/Login';
+import Login from './components/pages/login/Login';
 import Devices from './components/pages/devices/Devices';
 import Settings from './components/pages/settings/Settings';
 import Predictions from './components/pages/predictions/Predictions';
