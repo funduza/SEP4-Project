@@ -13,13 +13,13 @@ import {
   AlertDescription,
   Image,
 } from '@chakra-ui/react';
-import Header from '../includes/Header';
-import logoIconText from '../../assets/images/logoicontext.png';
-import grassImg from '../../assets/images/grass.png';
-import treeImg from '../../assets/images/tree.png';
-import flowerImg from '../../assets/images/flower.png';
-import flowerPotImg from '../../assets/images/flower-pot.png';
-import butterflyImg from '../../assets/images/butterfly.png';
+import Header from '../../includes/Header';
+import logoIconText from '../../../assets/images/logoicontext.png';
+import grassImg from '../../../assets/images/grass.png';
+import treeImg from '../../../assets/images/tree.png';
+import flowerImg from '../../../assets/images/flower.png';
+import flowerPotImg from '../../../assets/images/flower-pot.png';
+import butterflyImg from '../../../assets/images/butterfly.png';
 
 interface LoginProps {
   onLogin: (token: string, user: any) => void;
