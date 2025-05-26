@@ -14,7 +14,13 @@ const rangesConstant: Ranges = {
   light_lux: { min: 0, max: 2000, ideal: { min: 800, max: 1800 } }
 };
 
-export const usePredictions = (initialSelectedRange: string = '24h', initialSelectedSensorType: string = 'temp') => {
+export type SensorType = 'temp' | 'air_humidity' | 'soil_humidity' | 'co2_level' | 'light_lux';
+export type TimeRange = '6h' | '12h' | '24h' | '3d' | '7d';
+
+export const usePredictions = (
+  initialSelectedRange = '24h',
+  initialSelectedSensorType = 'temp'
+) => {
   const [predictionData, setPredictionData] = useState<PredictionData[]>([]);
   const [selectedRange, setSelectedRange] = useState(initialSelectedRange);
   const [selectedSensorType, setSelectedSensorType] = useState(initialSelectedSensorType);
@@ -129,7 +135,7 @@ export const usePredictions = (initialSelectedRange: string = '24h', initialSele
   }, [isGenerating, selectedRange, fetchPredictions, showMessage, API_URL]);
   
   const handleRangeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRange = e.target.value;
+    const newRange = e.target.value as TimeRange;
     setSelectedRange(newRange);
     // Fetching will be triggered by useEffect watching selectedRange
   }, []);
