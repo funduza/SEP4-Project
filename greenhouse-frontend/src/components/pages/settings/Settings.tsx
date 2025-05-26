@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import {
   Box, Input, Button, Text, Flex, Spinner, IconButton,
-  useBreakpointValue, Stack, Center
+  useBreakpointValue, Stack, Center, IconButtonProps
 } from '@chakra-ui/react';
 import { Tabs } from '@chakra-ui/react';
 import { Alert } from '@chakra-ui/react';
@@ -156,17 +156,6 @@ const TabContent: React.FC<TabContentProps> = ({ value, children }) => (
     {children}
   </Tabs.Content>
 );
-
-// IconButton için tip tanımlaması ekliyoruz
-interface IconButtonProps {
-  'aria-label': string;
-  onClick: () => void;
-  variant: string;
-  size: string | number;
-  colorScheme: string;
-  flexShrink: number;
-  children: React.ReactNode;
-}
 
 export default function Settings() {
   const [profile, setProfile] = useState<UserProfile | null>(null);

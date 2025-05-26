@@ -14,10 +14,10 @@ const rangesConstant: Ranges = {
   light_lux: { min: 0, max: 2000, ideal: { min: 800, max: 1800 } }
 };
 
-export const usePredictions = (initialSelectedRange = '24h', initialSelectedSensorType = 'temp') => {
+export const usePredictions = (initialSelectedRange: string = '24h', initialSelectedSensorType: string = 'temp') => {
   const [predictionData, setPredictionData] = useState<PredictionData[]>([]);
-  const [selectedRange, setSelectedRange] = useState(initialSelectedRange);
-  const [selectedSensorType, setSelectedSensorType] = useState(initialSelectedSensorType);
+  const [selectedRange, setSelectedRange] = useState<string>(initialSelectedRange);
+  const [selectedSensorType, setSelectedSensorType] = useState<string>(initialSelectedSensorType); 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());

@@ -4,15 +4,11 @@
 
 /**
  * Format a timestamp in "time ago" format
- * @param milliseconds Number of milliseconds elapsed
- * @returns Formatted string (e.g. "just now", "2 minutes ago")
+ * @param seconds Number of seconds elapsed
+ * @returns Formatted string (e.g. "2 minutes ago")
  */
-export const formatTimeAgo = (milliseconds: number): string => {
-  const seconds = Math.floor(milliseconds / 1000);
-  
-  if (seconds < 5) {
-    return 'just now';
-  } else if (seconds < 60) {
+export const formatTimeAgo = (seconds: number): string => {
+  if (seconds < 60) {
     return `${seconds} second${seconds !== 1 ? 's' : ''} ago`;
   } else if (seconds < 3600) {
     const minutes = Math.floor(seconds / 60);

@@ -44,7 +44,7 @@ import { IoWater } from "react-icons/io5";
 import { formatTimeAgo } from '../../../utils';
 
 // SVG Icons for fallback if needed
-const renderDeviceIcon = (iconType: string, props: { color?: string, boxSize?: number | string, mr?: number }) => {
+const renderDeviceIcon = (iconType: string, props: any = {}) => {
   const { color, boxSize, ...rest } = props;
   const style = {
     width: typeof boxSize === "number" ? `${boxSize}px` : boxSize || "24px",
@@ -173,6 +173,8 @@ const Devices: React.FC<Record<string, never>> = () => {
       timestamp: new Date(Date.now() - 30 * 60000), // 30 minutes ago
     },
   ]);
+
+  const [selectedDevice, setSelectedDevice] = useState<Record<string, unknown> | null>(null);
 
   const fetchDevices = useCallback(async () => {
     try {
