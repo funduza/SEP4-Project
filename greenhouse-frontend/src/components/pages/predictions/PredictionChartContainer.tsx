@@ -94,7 +94,12 @@ const PredictionChartContainer: React.FC<PredictionChartContainerProps> = ({
       </Flex>
 
       <Box>
-        <Flex borderBottom="1px solid" borderColor="gray.200" mb={4}>
+        <Flex 
+          borderBottom="1px solid" 
+          borderColor="gray.200" 
+          mb={4}
+          overflowX="auto"
+        >
           {sensorTypes.map((type) => (
             <Box
               key={type.id}
@@ -105,6 +110,7 @@ const PredictionChartContainer: React.FC<PredictionChartContainerProps> = ({
               color={selectedSensorType === type.id ? "green.500" : "gray.600"}
               fontWeight={selectedSensorType === type.id ? "bold" : "normal"}
               onClick={() => setSelectedSensorType(type.id)}
+              minWidth="120px"
             >
               {type.label}
             </Box>
