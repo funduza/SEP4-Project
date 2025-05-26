@@ -4,6 +4,7 @@ import { PredictionData, Ranges, Insight, ChartDataItem } from '../components/pa
 const API_URL = window.location.hostname === 'localhost' 
   ? 'http://localhost:3000'
   : 'https://sep4-backend.onrender.com';
+const PREDICTIONS_ENDPOINT = '/api/predictions';
 
 const rangesConstant: Ranges = {
   temp: { min: 15, max: 35, ideal: { min: 22, max: 28 } },
@@ -69,7 +70,7 @@ export const usePredictions = (initialSelectedRange: string = '24h', initialSele
     setError(null);
     setIsRefreshing(true);
     try {
-      const response = await fetch(`${API_URL}/api/predictions?range=${rangeToFetch}`);
+      const response = await fetch(`${API_URL}${PREDICTIONS_ENDPOINT}?range=${rangeToFetch}`);
       if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText || 'Failed to fetch'}`);
       const data = await response.json();
       if (data.empty === true) {

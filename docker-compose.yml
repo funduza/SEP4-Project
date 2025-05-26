@@ -1,5 +1,3 @@
-
-
 services:
   greenhouse-frontend:
     build: ./greenhouse-frontend

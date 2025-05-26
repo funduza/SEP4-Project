@@ -143,7 +143,7 @@ const StatusDot = ({ isActive }: { isActive: boolean }) => {
   );
 };
 
-const Devices: React.FC<{}> = () => {
+const Devices: React.FC<Record<string, never>> = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -173,6 +173,8 @@ const Devices: React.FC<{}> = () => {
       timestamp: new Date(Date.now() - 30 * 60000), // 30 minutes ago
     },
   ]);
+
+  const [selectedDevice, setSelectedDevice] = useState<Record<string, unknown> | null>(null);
 
   const fetchDevices = useCallback(async () => {
     try {
