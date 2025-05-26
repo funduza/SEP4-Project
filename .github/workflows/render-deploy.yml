@@ -13,9 +13,17 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Trigger Render Backend Deploy
-        if: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
-        run: curl -X POST ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}" ]; then
+            curl -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}"
+          else
+            echo "No backend deploy hook set, skipping."
+          fi
 
       - name: Trigger Render Frontend Deploy
-        if: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
-        run: curl -X POST ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}" ]; then
+            curl -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}"
+          else
+            echo "No frontend deploy hook set, skipping."
+          fi
