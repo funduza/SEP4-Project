@@ -44,7 +44,7 @@ import { IoWater } from "react-icons/io5";
 import { formatTimeAgo } from '../../../utils';
 
 // SVG Icons for fallback if needed
-const renderDeviceIcon = (iconType: string, props: any = {}) => {
+const renderDeviceIcon = (iconType: string, props: { color?: string, boxSize?: number | string, mr?: number }) => {
   const { color, boxSize, ...rest } = props;
   const style = {
     width: typeof boxSize === "number" ? `${boxSize}px` : boxSize || "24px",
@@ -143,7 +143,7 @@ const StatusDot = ({ isActive }: { isActive: boolean }) => {
   );
 };
 
-const Devices: React.FC<{}> = () => {
+const Devices: React.FC<Record<string, never>> = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

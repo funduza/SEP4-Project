@@ -117,6 +117,57 @@ const alertStyles = `
   }
 `;
 
+// Tip tanımlamaları
+interface DeviceSettings {
+  id: number;
+  name: string;
+  type: string;
+  settings: Record<string, unknown>;
+}
+
+interface UserSettings {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+}
+
+// Tabs için tip tanımlamaları
+interface TabTriggerProps {
+  value: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}
+
+interface TabContentProps {
+  value: string;
+  children: React.ReactNode;
+}
+
+// Tabs bileşenlerini özelleştiriyoruz
+const TabTrigger: React.FC<TabTriggerProps> = ({ value, style, children }) => (
+  <Tabs.Trigger value={value} style={style}>
+    {children}
+  </Tabs.Trigger>
+);
+
+const TabContent: React.FC<TabContentProps> = ({ value, children }) => (
+  <Tabs.Content value={value}>
+    {children}
+  </Tabs.Content>
+);
+
+// IconButton için tip tanımlaması ekliyoruz
+interface IconButtonProps {
+  'aria-label': string;
+  onClick: () => void;
+  variant: string;
+  size: string | number;
+  colorScheme: string;
+  flexShrink: number;
+  children: React.ReactNode;
+}
+
 export default function Settings() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [firstName, setFirstName] = useState<string>('');
@@ -129,6 +180,9 @@ export default function Settings() {
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<{ tab: string; type: 'success' | 'error'; message: string } | null>(null);
   const [activeTab, setActiveTab] = useState<string>('profile');
+  
+  const [devices, setDevices] = useState<DeviceSettings[]>([]);
+  const [users, setUsers] = useState<UserSettings[]>([]);
   
   // Get window size for responsive layout
   const windowSize = useWindowSize();
@@ -281,6 +335,26 @@ export default function Settings() {
     return () => clearInterval(interval);
   }, []);
   
+  const handleDeviceSettingChange = (deviceId: number, setting: string, value: unknown) => {
+    setDevices((prevDevices: DeviceSettings[]) => 
+      prevDevices.map((device: DeviceSettings) => 
+        device.id === deviceId 
+          ? { ...device, settings: { ...device.settings, [setting]: value } }
+          : device
+      )
+    );
+  };
+
+  const handleUserSettingChange = (userId: number, setting: string, value: unknown) => {
+    setUsers((prevUsers: UserSettings[]) =>
+      prevUsers.map((user: UserSettings) =>
+        user.id === userId
+          ? { ...user, [setting]: value }
+          : user
+      )
+    );
+  };
+  
   if (loading) {
     return <Flex justify="center" align="center" minH="200px"><Spinner size="lg" /></Flex>;
   }
@@ -327,7 +401,6 @@ export default function Settings() {
               <Alert.Description>{confirmation.message}</Alert.Description>
             </Alert.Root>
           )}
-          {/* @ts-ignore */}
           <Tabs.List style={{ 
             borderBottom: '2px solid #eee', 
             marginBottom: 32, 
@@ -337,27 +410,38 @@ export default function Settings() {
             flexWrap: windowSize.width < 480 ? 'wrap' : 'nowrap',
             padding: windowSize.width < 480 ? '0 0 12px 0' : 0
           }}>
-            {/* @ts-ignore */}
-            <Tabs.Trigger value="profile" style={{ 
-              color: '#4a5568', 
-              fontWeight: 'medium',
-              fontSize: windowSize.width < 600 ? '0.9rem' : '1rem'
-            }}><>Profile Settings</></Tabs.Trigger>
-            {/* @ts-ignore */}
-            <Tabs.Trigger value="password" style={{ 
-              color: '#4a5568', 
-              fontWeight: 'medium',
-              fontSize: windowSize.width < 600 ? '0.9rem' : '1rem'
-            }}><>Password Settings</></Tabs.Trigger>
-            {/* @ts-ignore */}
-            <Tabs.Trigger value="device" style={{ 
-              color: '#4a5568', 
-              fontWeight: 'medium',
-              fontSize: windowSize.width < 600 ? '0.9rem' : '1rem'
-            }}><>Device Settings</></Tabs.Trigger>
+            <TabTrigger 
+              value="profile" 
+              style={{ 
+                color: '#4a5568', 
+                fontWeight: 'medium',
+                fontSize: windowSize.width < 600 ? '0.9rem' : '1rem'
+              }}
+            >
+              Profile Settings
+            </TabTrigger>
+            <TabTrigger 
+              value="password" 
+              style={{ 
+                color: '#4a5568', 
+                fontWeight: 'medium',
+                fontSize: windowSize.width < 600 ? '0.9rem' : '1rem'
+              }}
+            >
+              Password Settings
+            </TabTrigger>
+            <TabTrigger 
+              value="device" 
+              style={{ 
+                color: '#4a5568', 
+                fontWeight: 'medium',
+                fontSize: windowSize.width < 600 ? '0.9rem' : '1rem'
+              }}
+            >
+              Device Settings
+            </TabTrigger>
           </Tabs.List>
-          {/* @ts-ignore */}
-          <Tabs.Content value="profile">
+          <TabContent value="profile">
             <>
             <Box mb={fieldSpacing} p={{ base: 4, md: 6 }} bg="gray.50" borderRadius="lg" boxShadow="sm">
               <Text fontWeight="semibold" color="gray.700" fontSize={{ base: "sm", md: "md" }}><b>Username:</b> {profile?.username}</Text>
@@ -389,9 +473,8 @@ export default function Settings() {
               <Button colorScheme="green" size={getInputSize()} type="submit" mt={2} w="full">Save Changes</Button>
             </form>
             </>
-          </Tabs.Content>
-          {/* @ts-ignore */}
-          <Tabs.Content value="password">
+          </TabContent>
+          <TabContent value="password">
             <Flex direction="column" align="center" justify="center" minH={{ base: "300px", md: "400px" }} w="100%">
               <Flex 
                 p={4} 
@@ -458,7 +541,6 @@ export default function Settings() {
                       _hover={{ borderColor: 'gray.300' }}
                       _focus={{ borderColor: 'green.500', boxShadow: '0 0 0 1px var(--chakra-colors-green-500)' }}
                     />
-                    {/* @ts-ignore */}
                     <IconButton
                       aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
@@ -499,7 +581,6 @@ export default function Settings() {
                       _hover={{ borderColor: 'gray.300' }}
                       _focus={{ borderColor: 'green.500', boxShadow: '0 0 0 1px var(--chakra-colors-green-500)' }}
                     />
-                    {/* @ts-ignore */}
                     <IconButton
                       aria-label={showNewPassword ? 'Hide password' : 'Show password'}
                       onClick={() => setShowNewPassword(!showNewPassword)}
@@ -529,11 +610,10 @@ export default function Settings() {
                 <Button colorScheme="green" size={getInputSize()} type="submit" w="full">Change Password</Button>
               </form>
             </Flex>
-          </Tabs.Content>
-          {/* @ts-ignore */}
-          <Tabs.Content value="device">
+          </TabContent>
+          <TabContent value="device">
             <><Box p={{ base: 4, md: 8 }} bg="gray.50" borderRadius="lg" textAlign="center"><Text color="gray.500" fontSize={{ base: "md", md: "lg" }}>Device settings are currently unavailable.</Text></Box></>
-          </Tabs.Content>
+          </TabContent>
         </Tabs.Root>
       </Box>
     </Flex>
