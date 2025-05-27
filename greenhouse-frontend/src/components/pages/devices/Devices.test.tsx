@@ -271,7 +271,7 @@ describe('Devices Component', () => {
 
       // Verify error message
       await waitFor(() => {
-        expect(screen.getByText(/Failed to update device status/i)).toBeInTheDocument();
+        expect(screen.getByText(/Error updating device. Please try again./i)).toBeInTheDocument();
       });
     });
   });
