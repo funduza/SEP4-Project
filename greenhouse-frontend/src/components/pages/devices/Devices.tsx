@@ -7,7 +7,6 @@ import {
   Flex,
   Text,
   Badge,
-  HStack,
   Icon,
 } from "@chakra-ui/react";
 import DeviceLogs from './DeviceLogs';
@@ -42,6 +41,33 @@ import {
 } from "react-icons/bs";
 import { IoWater } from "react-icons/io5";
 import { formatTimeAgo } from '../../../utils';
+
+interface BaseDevice {
+  id: number;
+  name: string;
+  type: string;
+  status: string;
+  last_update: string; // Timestamp from server
+  isInteractive: boolean;
+}
+
+interface SensorDevice extends BaseDevice {
+  isInteractive: false;
+  value: number;
+  unit?: string;
+}
+
+interface ActuatorDevice extends BaseDevice {
+  isInteractive: true;
+  isOn: boolean;
+}
+
+type Device = SensorDevice | ActuatorDevice;
+
+// Server address
+const API_BASE_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://sep4-backend.onrender.com';
 
 // SVG Icons for fallback if needed
 const renderDeviceIcon = (iconType: string, props: any = {}) => {
@@ -97,38 +123,9 @@ const renderDeviceIcon = (iconType: string, props: any = {}) => {
   }
 };
 
-interface BaseDevice {
-  id: number;
-  name: string;
-  type: string;
-  status: string;
-  icon: string;
-  last_update: string;
-  isInteractive: boolean;
-}
-
-interface SensorDevice extends BaseDevice {
-  isInteractive: false;
-  value: number;
-  unit?: string;
-}
-
-interface ActuatorDevice extends BaseDevice {
-  isInteractive: true;
-  isOn: boolean;
-}
-
-type Device = SensorDevice | ActuatorDevice;
-
-// Since it's defined as '/api/devices' in the backend, we only specify the server address here
-const API_BASE_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:3000'
-  : 'https://sep4-backend.onrender.com';
-
-// Status indicator component
+// Status dot
 const StatusDot = ({ isActive }: { isActive: boolean }) => {
   const bgColor = isActive ? "green.400" : "red.400";
-  
   return (
     <Box
       position="absolute"
@@ -143,253 +140,108 @@ const StatusDot = ({ isActive }: { isActive: boolean }) => {
   );
 };
 
-const Devices: React.FC<Record<string, never>> = () => {
+const Devices: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [devices, setDevices] = useState<Device[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
-  
-  // Add a ref to store device update timestamps - properly inside component
+
+  // Stores the last update timestamps for devices
   const deviceUpdateTimestamps = useRef<Record<number, number>>({});
-
-  // Initialize with some example logs
-  const [activityLog, setActivityLog] = useState<
-    { action: string; device: string; timestamp: Date }[]
-  >([
-    {
-      action: "turned on",
-      device: "LED Grow Lights",
-      timestamp: new Date(Date.now() - 5 * 60000), // 5 minutes ago
-    },
-    {
-      action: "turned off",
-      device: "Ventilation Fan",
-      timestamp: new Date(Date.now() - 15 * 60000), // 15 minutes ago
-    },
-    {
-      action: "turned on",
-      device: "Water Pump - Zone A",
-      timestamp: new Date(Date.now() - 30 * 60000), // 30 minutes ago
-    },
-  ]);
-
-  const [selectedDevice, setSelectedDevice] = useState<Record<string, unknown> | null>(null);
 
   const fetchDevices = useCallback(async () => {
     try {
-      // Just refresh data instead of reloading the whole page
-      // setLoading(true); - Only set loading state to true on initial load
-      
-      // Clean fetch request like in Dashboard component
       const response = await fetch(`${API_BASE_URL}/api/devices`);
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // UPDATED: Compare with previous devices and only update timestamps for changed devices
-      setDevices(prevDevices => {
-        // Update timestamps for new devices
-        data.forEach((device: Device) => {
-          if (!deviceUpdateTimestamps.current[device.id]) {
-            deviceUpdateTimestamps.current[device.id] = Date.now();
-          } else {
-            // Check if any device data has changed to update timestamp
-            const prevDevice = prevDevices.find(d => d.id === device.id);
-            if (prevDevice) {
-              // If it's an actuator, check if isOn status changed
-              if (device.isInteractive && prevDevice.isInteractive) {
-                const prevActuator = prevDevice as ActuatorDevice;
-                const newActuator = device as ActuatorDevice;
-                if (prevActuator.isOn !== newActuator.isOn) {
-                  deviceUpdateTimestamps.current[device.id] = Date.now();
-                }
-              } 
-              // For sensors, check if value changed
-              else if (!device.isInteractive && !prevDevice.isInteractive) {
-                const prevSensor = prevDevice as SensorDevice;
-                const newSensor = device as SensorDevice;
-                if (prevSensor.value !== newSensor.value) {
-                  deviceUpdateTimestamps.current[device.id] = Date.now();
-                }
-              }
-            }
-          }
-        });
-        return data;
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      const data: Device[] = await response.json();
+
+      // For each device, set the last update timestamp to the last_update from the server
+      data.forEach(device => {
+        const ts = new Date(device.last_update).getTime();
+        deviceUpdateTimestamps.current[device.id] = ts;
       });
-      
+
+      setDevices(data);
       setError("");
     } catch (err) {
-      setError("Could not connect to server. Make sure the backend is running.");
-      // Only set empty array in case of error, otherwise keep current data
-      // setDevices([]);
+      setError("Could not connect to server. Please check if the backend is running.");
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL]);
+  }, []);
 
   useEffect(() => {
-    // Get data during initial load and set loading state
     setLoading(true);
     fetchDevices();
-    
-    // Refresh data every 5 seconds but don't reload the page
-    const intervalId = setInterval(() => {
-      fetchDevices();
-    }, 5000);
-    
-    // Clean up interval when component is unmounted
+    const intervalId = setInterval(fetchDevices, 5000);
     return () => clearInterval(intervalId);
   }, [fetchDevices]);
 
-  // Define colors
-  const bgGradient = "linear(to-b, green.50, white)";
-  const cardBg = "white";
-  const cardHoverBg = "gray.50";
-  const cardBorder = "gray.200";
-  const primaryGreen = "#2e7d32";
-  const secondaryGreen = "#22c35e";
+  // Toggle device
+  const toggleDevice = useCallback(async (id: number) => {
+    setIsUpdating(id);
+    try {
+      const device = devices.find(d => d.id === id) as ActuatorDevice;
+      if (!device) throw new Error("Device not found");
 
-  // Filter devices based on search query
-  const filteredDevices = devices.filter((device) =>
-    device.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+      const newState = !device.isOn;
+      // Optimistic update
+      setDevices(devs =>
+        devs.map(d =>
+          d.id === id && d.isInteractive
+            ? { ...(d as ActuatorDevice), isOn: newState, status: newState ? "Active" : "Inactive" }
+            : d
+        )
+      );
 
-  // Toggle device status
-  const toggleDevice = useCallback(
-    async (id: number) => {
-      try {
-        setIsUpdating(id);
-
-        // Find the device we're updating
-        const device = devices.find((d) => d.id === id) as ActuatorDevice;
-
-        if (!device) {
-          throw new Error("Device not found");
-        }
-
-        const isOn = !device.isOn;
-
-        // Log this activity for better UX
-        const action = isOn ? "turned on" : "turned off";
-        setActivityLog((prev) => [
-          {
-            action,
-            device: device.name,
-            timestamp: new Date(),
+      await fetch(
+        `${API_BASE_URL}/api/devices/${id}/toggle`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token") ? `Bearer ${localStorage.getItem("token")}` : "",
           },
-          ...prev.slice(0, 9), // Keep only the 10 most recent logs
-        ]);
-
-        // UPDATED: Update timestamp for this device immediately when toggled
-        deviceUpdateTimestamps.current[id] = Date.now();
-
-        // Optimistic UI update
-        setDevices(
-          devices.map((d) => {
-            if (d.id === id && d.isInteractive) {
-              const actuatorDevice = d as ActuatorDevice;
-              return {
-                ...actuatorDevice,
-                isOn,
-                status: isOn ? "Active" : "Inactive",
-              };
-            }
-            return d;
-          }),
-        );
-
-        // Get token from localStorage
-        const token = localStorage.getItem('token');
-
-        // Get user data from localStorage
-        try {
-          const userDataStr = localStorage.getItem('user');
-          if (userDataStr) {
-            const userData = JSON.parse(userDataStr);
-          }
-        } catch (err) {
-          // User data parsing error
+          body: JSON.stringify({ status: newState ? "on" : "off" }),
         }
+      );
 
-        // Clean API request like in Dashboard
-        const response = await fetch(
-          `${API_BASE_URL}/api/devices/${id}/toggle`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": token ? `Bearer ${token}` : '',
-            },
-            body: JSON.stringify({ 
-              status: isOn ? 'on' : 'off' 
-            }),
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to toggle device: ${response.status}`);
-        }
-
-        // Get updated state from server
-        const result = await response.json();
-
-        // Update UI with server state (if different from optimistic update)
-        if (result.device) {
-          setDevices((prevDevices) =>
-            prevDevices.map((d) =>
-              d.id === id ? { ...d, ...result.device } : d,
-            ),
-          );
-        }
-      } catch (err) {
-        // Revert the optimistic update in case of failure
-        setError("Failed to update device status. Please try again.");
-        setDevices(
-          devices.map((d) => {
-            if (d.id === id && d.isInteractive) {
-              const actuatorDevice = d as ActuatorDevice;
-              return {
-                ...actuatorDevice,
-                isOn: !actuatorDevice.isOn, // Toggle back
-                status: actuatorDevice.isOn ? "Active" : "Inactive",
-              };
-            }
-            return d;
-          }),
-        );
-      } finally {
-        setIsUpdating(null);
-      }
-    },
-    [
-      API_BASE_URL,
-      devices,
-      setActivityLog,
-      setDevices,
-      setError,
-      setIsUpdating,
-      deviceUpdateTimestamps,
-    ],
-  );
-
-  // Update last update time for device - this is inside the component
-  const getLastUpdateTime = (deviceId: number) => {
-    if (!deviceUpdateTimestamps.current[deviceId]) {
-      deviceUpdateTimestamps.current[deviceId] = Date.now();
+      // Fetch again from server to update
+      fetchDevices();
+    } catch {
+      setError("Error updating device. Please try again.");
+      // Rollback the optimistic update
+      setDevices(devs =>
+        devs.map(d =>
+          d.id === id && d.isInteractive
+            ? { ...(d as ActuatorDevice), isOn: !(d as ActuatorDevice).isOn, status: (d as ActuatorDevice).isOn ? "Active" : "Inactive" }
+            : d
+        )
+      );
+    } finally {
+      setIsUpdating(null);
     }
+  }, [devices, fetchDevices]);
+
+  const getLastUpdateTime = (deviceId: number) => {
+    // If no timestamp exists for this device, use current time
+    const ts = deviceUpdateTimestamps.current[deviceId] || Date.now();
     
-    return formatTimeAgo(Date.now() - deviceUpdateTimestamps.current[deviceId]);
+    // Convert elapsed milliseconds to seconds (truncated with floor)
+    const elapsedSeconds = Math.floor((Date.now() - ts) / 1000);
+    
+    // Pass elapsed seconds to formatTimeAgo function
+    return formatTimeAgo(elapsedSeconds);
   };
 
+  const filteredDevices = devices.filter(d =>
+    d.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <Box p={5} bg={bgGradient} minH="calc(100vh - 64px)">
+    <Box p={5} bg="linear(to-b, green.50, white)" minH="calc(100vh - 64px)">
       <Box maxW="1200px" mx="auto">
-        {/* Loading & Error States */}
         {loading && (
           <Box textAlign="center" py={10}>
             <Box
@@ -418,268 +270,124 @@ const Devices: React.FC<Record<string, never>> = () => {
             borderLeft="4px solid"
             borderLeftColor="red.500"
           >
-            <Heading size="sm" mb={1}>
-              Error
-            </Heading>
+            <Heading size="sm" mb={1}>Error</Heading>
             <Text>{error}</Text>
           </Box>
         )}
 
-        {/* Only show content when devices are loaded successfully */}
-        {devices.length > 0 && !loading && !error && (
+        {!loading && !error && devices.length > 0 && (
           <>
+            {/* Title and search */}
             <Box textAlign="center" mb={6}>
-              <Heading size="lg" color="green.700" mb={2}>
-                Greenhouse Devices
-              </Heading>
-              <Text color="gray.600">
-                Monitor and control your greenhouse devices from one central
-                location
-              </Text>
+              <Heading size="lg" color="green.700" mb={2}>Greenhouse Devices</Heading>
+              <Text color="gray.600">Monitor and control your devices here</Text>
             </Box>
-
-            {/* Search Box */}
-            <Box maxW="500px" mb={8} position="relative" width="100%" mx="auto">
-              <Box
-                position="absolute"
-                left="3"
-                top="50%"
-                transform="translateY(-50%)"
-                zIndex="1"
-                color="gray.400"
-              >
-                <Icon boxSize="14px">
-                  <FaSearch />
-                </Icon>
-              </Box>
+            <Box maxW="500px" mb={8} mx="auto" position="relative">
+              <Icon boxSize="14px" position="absolute" left="12px" top="50%" transform="translateY(-50%)" color="gray.400">
+                <FaSearch />
+              </Icon>
               <Input
                 placeholder="Search devices..."
                 size="lg"
                 pl="40px"
-                bg={cardBg}
-                borderColor={cardBorder}
+                bg="white"
+                borderColor="gray.200"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 _hover={{ borderColor: "gray.300" }}
-                _focus={{
-                  borderColor: primaryGreen,
-                  boxShadow: `0 0 0 1px ${primaryGreen}`,
-                }}
+                _focus={{ borderColor: "#2e7d32", boxShadow: "0 0 0 1px #2e7d32" }}
                 borderRadius="md"
               />
             </Box>
 
-            {/* Device Grid */}
-            <SimpleGrid columns={{ base: 1, sm: 1, md: 2, lg: 3 }} gap={6} mt={8}>
-              {loading
-                ? Array(6)
-                    .fill(0)
-                    .map((_, i) => (
-                      <Box
-                        key={i}
-                        borderWidth="1px"
-                        borderRadius="lg"
-                        p={6}
-                        bg="white"
-                        height="220px"
-                        opacity={0.7}
-                      />
-                    ))
-                : filteredDevices.map((device) => {
-                    const isActive = device.status === 'Active';
-                    const isActuator = device.isInteractive;
-                    return (
-                      <Box
-                        key={device.id}
-                        borderWidth="1px"
-                        borderRadius="lg"
-                        borderColor={cardBorder}
-                        p={6}
-                        bg={cardBg}
-                        _hover={{ 
-                          bg: cardHoverBg,
-                          transform: "translateY(-5px)",
-                          boxShadow: "lg",
-                          borderColor: "green.200"
-                        }}
-                        boxShadow="sm"
-                        transition="all 0.3s ease"
-                        position="relative"
-                        height="220px"
-                      >
-                        <StatusDot isActive={isActive} />
-                        
-                        <Flex height="100%" direction="column" justify="space-between">
-                          <Flex align="center" mb={4}>
-                            <Box
-                              p={3}
-                              borderRadius="md"
-                              bg={
-                                device.isInteractive &&
-                                (device as ActuatorDevice).isOn
-                                  ? "green.50"
-                                  : "gray.50"
-                              }
-                              color={
-                                device.isInteractive &&
-                                (device as ActuatorDevice).isOn
-                                  ? "green.500"
-                                  : "gray.500"
-                              }
-                              mr={4}
+            {/* Device cards */}
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
+              {filteredDevices.map(device => {
+                const isActive = device.status === "Active";
+                return (
+                  <Box key={device.id} borderWidth="1px" borderRadius="lg" p={6} bg="white" boxShadow="sm" position="relative" height="220px">
+                    <StatusDot isActive={isActive} />
+                    <Flex direction="column" justify="space-between" height="100%">
+                      {/* Title */}
+                      <Flex align="center" mb={4}>
+                        <Box
+                          p={3}
+                          borderRadius="md"
+                          bg={
+                            device.isInteractive &&
+                            (device as ActuatorDevice).isOn
+                              ? "green.50"
+                              : "gray.50"
+                          }
+                          color={
+                            device.isInteractive &&
+                            (device as ActuatorDevice).isOn
+                              ? "green.500"
+                              : "gray.500"
+                          }
+                          mr={4}
+                        >
+                          {renderDeviceIcon(device.name, { boxSize: 30 })}
+                        </Box>
+                        <Box>
+                          <Text fontSize="xl" fontWeight="600" color="gray.700" mb={1}>{device.name}</Text>
+                          <Flex gap={2} align="center">
+                            <Badge
+                              colorScheme={device.isInteractive
+                                ? (device as ActuatorDevice).isOn ? "green" : "gray"
+                                : device.status === "Normal" ? "green" : "yellow"}
+                              fontSize="sm"
+                              px={2}
+                              py={0.5}
+                              borderRadius="full"
                             >
-                              {renderDeviceIcon(device.name, { boxSize: 30 })}
-                            </Box>
-                            <Box>
-                              <Text fontSize="xl" fontWeight="600" color="gray.700" mb={1}>
-                                {device.name}
-                              </Text>
-                              <Flex gap={2} alignItems="center">
-                                <Badge
-                                  colorScheme={
-                                    device.isInteractive
-                                      ? (device as ActuatorDevice).isOn
-                                        ? "green"
-                                        : "gray"
-                                      : device.status === "Normal"
-                                        ? "green"
-                                        : "yellow"
-                                  }
-                                  fontSize="sm"
-                                  borderRadius="full"
-                                  px={2}
-                                  py={0.5}
-                                >
-                                  {device.status}
-                                </Badge>
-                                <Text fontSize="sm" color="gray.500">
-                                  {device.type}
-                                </Text>
-                              </Flex>
-                            </Box>
+                              {device.status}
+                            </Badge>
+                            <Text fontSize="sm" color="gray.500">{device.type}</Text>
                           </Flex>
+                        </Box>
+                      </Flex>
 
-                          {device.isInteractive ? (
-                            <Box py={3} display="flex" justifyContent="center" alignItems="center">
-                              <Flex align="center">
-                                <Text
-                                  fontSize="md"
-                                  mr={3}
-                                  fontWeight="500"
-                                  color={(device as ActuatorDevice).isOn ? "green.500" : "gray.500"}
-                                >
-                                  {(device as ActuatorDevice).isOn ? "ON" : "OFF"}
-                                </Text>
-                                <Box
-                                  onClick={() => toggleDevice(device.id)}
-                                  w="50px"
-                                  h="26px"
-                                  bg={
-                                    (device as ActuatorDevice).isOn
-                                      ? secondaryGreen
-                                      : "gray.300"
-                                  }
-                                  borderRadius="full"
-                                  position="relative"
-                                  transition="all 0.2s"
-                                  cursor="pointer"
-                                  boxShadow="md"
-                                >
-                                  <Box
-                                    position="absolute"
-                                    w="22px"
-                                    h="22px"
-                                    bg="white"
-                                    borderRadius="full"
-                                    transition="all 0.2s"
-                                    transform={
-                                      (device as ActuatorDevice).isOn
-                                        ? "translateX(24px)"
-                                        : "translateX(4px)"
-                                    }
-                                    top="2px"
-                                    boxShadow="0 1px 3px rgba(0,0,0,0.3)"
-                                  />
-                                </Box>
-                              </Flex>
-                            </Box>
-                          ) : (
-                            <Box textAlign="center" py={3}>
-                              <Text
-                                fontSize="3xl"
-                                fontWeight="bold"
-                                color="gray.700"
-                              >
-                                {(device as SensorDevice).value}
-                                {(device as SensorDevice).unit && (
-                                  <Text
-                                    as="span"
-                                    fontSize="xl"
-                                    fontWeight="normal"
-                                    color="gray.500"
-                                    ml={1}
-                                  >
-                                    {(device as SensorDevice).unit}
-                                  </Text>
-                                )}
-                              </Text>
-                            </Box>
-                          )}
-
-                          <Flex justify="space-between" align="center" mt="auto">
-                            <Text fontSize="xs" color="gray.500">
-                              Last updated: {getLastUpdateTime(device.id)}
-                            </Text>
-                          </Flex>
+                      {/* Sensor / Actuator section */}
+                      {device.isInteractive ? (
+                        <Flex justify="center" align="center">
+                          <Text fontSize="md" fontWeight="500" color={(device as ActuatorDevice).isOn ? "green.500" : "gray.500"} mr={3}>
+                            {(device as ActuatorDevice).isOn ? "ON" : "OFF"}
+                          </Text>
+                          <Box onClick={() => toggleDevice(device.id)} cursor="pointer" w="50px" h="26px" bg={(device as ActuatorDevice).isOn ? "#22c35e" : "gray.300"} borderRadius="full" position="relative" boxShadow="md">
+                            <Box position="absolute" top="2px" left={(device as ActuatorDevice).isOn ? "24px" : "4px"} w="22px" h="22px" bg="white" borderRadius="full" boxShadow="0 1px 3px rgba(0,0,0,0.3)" transition="all 0.2s" />
+                          </Box>
                         </Flex>
-                      </Box>
-                    );
-                  })}
+                      ) : (
+                        <Box textAlign="center" py={3}>
+                          <Text fontSize="3xl" fontWeight="bold" color="gray.700">
+                            {(device as SensorDevice).value}
+                            <Text as="span" fontSize="xl" fontWeight="normal" color="gray.500" ml={1}>
+                              {(device as SensorDevice).unit}
+                            </Text>
+                          </Text>
+                        </Box>
+                      )}
+
+                      {/* Last update */}
+                      <Flex justify="space-between" align="center">
+                        <Text fontSize="xs" color="gray.500">
+                          Last update: {getLastUpdateTime(device.id)}
+                        </Text>
+                      </Flex>
+                    </Flex>
+                  </Box>
+                );
+              })}
             </SimpleGrid>
 
-            {/* Activity Log Section */}
-            <Box
-              mt={10}
-              borderWidth="1px"
-              borderRadius="lg"
-              p={6}
-              bg="white"
-              boxShadow="sm"
-              maxW="1200px"
-              mx="auto"
-            >
-              <Flex 
-                align="center" 
-                justify="space-between"
-                mb={4}
-              >
-                <Flex align="center">
-                  <Box
-                    px={2}
-                    py={1}
-                    borderRadius="md"
-                    bg="blue.50"
-                    color="blue.600"
-                    mr={2}
-                  >
-                    <Icon boxSize="10px">
-                      <FaSearch />
-                    </Icon>
-                  </Box>
-                  <Heading size="md" color="gray.700">
-                    Activity Log
-                  </Heading>
-                </Flex>
-                
-                <Text fontSize="sm" color="gray.500">
-                  Auto-refreshing every 5 seconds
-                </Text>
+            {/* Activity log */}
+            <Box mt={10} borderWidth="1px" borderRadius="lg" p={6} bg="white" boxShadow="sm">
+              <Flex align="center" justify="space-between" mb={4}>
+                <Heading size="md" color="gray.700">Activity Log</Heading>
+                <Text fontSize="sm" color="gray.500">Updates every 5 seconds</Text>
               </Flex>
-
-              <DeviceLogs 
-                showTitle={false} 
-                compact={true} 
-              />
+              <DeviceLogs showTitle={false} compact />
             </Box>
           </>
         )}

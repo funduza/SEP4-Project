@@ -54,7 +54,6 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
     
     req.user = decoded as UserPayload;
     
-    // Continue to next middleware/route handler
     next();
   } catch (err) {
     res.status(401).json({
@@ -74,8 +73,9 @@ export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
     return;
   }
 
-
-  if (req.user.username === 'admin') {
+// We are not using admin privileges for now, but in the future 
+// if we want to add admin privileges, we can use this middleware
+  if (req.user.username === 'admin') { // Could be also changed to user.role if we would have role in db.
     next();
   } else {
     res.status(403).json({ 
