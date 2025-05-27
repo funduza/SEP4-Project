@@ -147,22 +147,18 @@ const Devices: React.FC = () => {
   const [error, setError] = useState("");
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
 
-  // Stores the last update timestamps for devices
-  const deviceUpdateTimestamps = useRef<Record<number, number>>({});
-
   const fetchDevices = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/devices`);
       if (!response.ok) throw new Error(`API error: ${response.status}`);
       const data: Device[] = await response.json();
-
-      // For each device, set the last update timestamp to the last_update from the server
-      data.forEach(device => {
-        const ts = new Date(device.last_update).getTime();
-        deviceUpdateTimestamps.current[device.id] = ts;
-      });
-
-      setDevices(data);
+      
+      const processedData = data.map(device => ({
+        ...device,
+        last_update: new Date().toISOString() 
+      }));
+      
+      setDevices(processedData);
       setError("");
     } catch (err) {
       setError("Could not connect to server. Please check if the backend is running.");
@@ -224,15 +220,27 @@ const Devices: React.FC = () => {
     }
   }, [devices, fetchDevices]);
 
-  const getLastUpdateTime = (deviceId: number) => {
-    // If no timestamp exists for this device, use current time
-    const ts = deviceUpdateTimestamps.current[deviceId] || Date.now();
-    
-    // Convert elapsed milliseconds to seconds (truncated with floor)
-    const elapsedSeconds = Math.floor((Date.now() - ts) / 1000);
-    
-    // Pass elapsed seconds to formatTimeAgo function
-    return formatTimeAgo(elapsedSeconds);
+  const getLastUpdateTime = (lastUpdate: string) => {
+    try {
+      const updateDate = new Date(lastUpdate);
+      const now = new Date();
+      const diffInMs = now.getTime() - updateDate.getTime();
+      const elapsedSeconds = Math.floor(diffInMs / 1000);
+
+      const seconds = Math.floor(elapsedSeconds % 60);
+      const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+      const hours = Math.floor((elapsedSeconds % 86400) / 3600);
+      const days = Math.floor(elapsedSeconds / 86400);
+
+      if (days > 0) return `${days} gün önce`;
+      if (hours > 0) return `${hours} saat önce`;
+      if (minutes > 0) return `${minutes} dakika önce`;
+      if (seconds > 0) return `${seconds} saniye önce`;
+      return "just now";
+    } catch (error) {
+      console.error('Error processing timestamp:', error, lastUpdate);
+      return "just now";
+    }
   };
 
   const filteredDevices = devices.filter(d =>
@@ -372,7 +380,7 @@ const Devices: React.FC = () => {
                       {/* Last update */}
                       <Flex justify="space-between" align="center">
                         <Text fontSize="xs" color="gray.500">
-                          Last update: {getLastUpdateTime(device.id)}
+                          Last update: {getLastUpdateTime(device.last_update)}
                         </Text>
                       </Flex>
                     </Flex>
